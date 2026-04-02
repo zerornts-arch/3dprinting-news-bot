@@ -1,15 +1,23 @@
-name: Email Test
+name: 우민님 3D프린팅 뉴스 브리핑
 
 on:
-  workflow_dispatch: {}  # 수동 실행만
+  schedule:
+    # 평일(월-금) 한국시간 오전 8시 자동 발송
+    # UTC 기준: 일요일 23시 ~ 목요일 23시 (0-4)
+    - cron: "0 23 * * 0-4"
+  workflow_dispatch: {}  # 수동 실행도 가능
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  test-email:
+  send-briefing:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -17,11 +25,13 @@ jobs:
           
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
           
-      - name: Send test email
+      - name: Run briefing system
         env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
-        run: python test_email.py
+        run: python main.py
