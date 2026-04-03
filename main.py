@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 import re
 import holidays
 
-print("🚀 Lincsolution 3D프린팅 뉴스 브리핑 시스템 (해외 번역 완벽 보장)")
+print("🚀 Lincsolution 3D프린팅 뉴스 브리핑 (대폭 확장된 수집 시스템)")
 
 KST = timezone(timedelta(hours=9))
 
@@ -17,30 +17,92 @@ ADDITIONAL_HOLIDAYS = {
     date(2025, 5, 6): "어린이날 대체공휴일",
 }
 
+# =============================================
+# 📡 대폭 확장된 RSS 피드 시스템
+# =============================================
 RSS_FEEDS = {
+    # -----------------------------------------------
+    # 🌍 해외: Google 뉴스 + 전문매체
+    # -----------------------------------------------
     "해외": [
         "https://3dprintingindustry.com/feed/",
         "https://all3dp.com/feed/",
         "https://3dprint.com/feed/",
-        "https://news.google.com/rss/search?q=3D+printing+OR+additive+manufacturing&hl=en-US&gl=US&ceid=US:en"
+        "https://www.tctmagazine.com/feed/",
+        # Google 뉴스 다양한 키워드
+        "https://news.google.com/rss/search?q=3D+printing&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=additive+manufacturing&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=metal+3D+printing&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=bioprinting&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=Stratasys+OR+Formlabs+OR+Bambu&hl=en-US&gl=US&ceid=US:en",
     ],
+
+    # -----------------------------------------------
+    # 🇰🇷 국내: Google 뉴스 대폭 확장 + 전문매체
+    # -----------------------------------------------
     "국내": [
-        "https://news.google.com/rss/search?q=3D프린터+OR+3D프린팅+OR+적층제조&hl=ko&gl=KR&ceid=KR:ko",
-        "https://rss.etnews.com/Section902.xml"
+        # Google 뉴스 - 기본 키워드 (네이버/다음 기사도 Google이 수집함)
+        "https://news.google.com/rss/search?q=3D프린팅&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=3D프린터&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=적층제조&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=3차원프린팅&hl=ko&gl=KR&ceid=KR:ko",
+        
+        # Google 뉴스 - 응용 분야별
+        "https://news.google.com/rss/search?q=3D프린팅+의료&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=3D프린팅+자동차&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=3D프린팅+항공우주&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=3D프린팅+건축&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=바이오프린팅&hl=ko&gl=KR&ceid=KR:ko",
+        
+        # Google 뉴스 - 기술별
+        "https://news.google.com/rss/search?q=메탈3D프린팅&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=금속3D프린터&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=SLA+3D프린터&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=FDM+3D프린터&hl=ko&gl=KR&ceid=KR:ko",
+        
+        # Google 뉴스 - 주요 기업명
+        "https://news.google.com/rss/search?q=삼성+3D프린팅&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=현대+3D프린팅&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=LG+3D프린팅&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=포스코+3D프린팅&hl=ko&gl=KR&ceid=KR:ko",
+        
+        # 전문 매체 RSS
+        "https://rss.etnews.com/Section902.xml",       # 전자신문 제조업
+        "https://rss.etnews.com/Section901.xml",       # 전자신문 IT
+        "https://rss.zdnet.co.kr/news_list.xml",       # ZDNet Korea
+        "https://rss.ddaily.co.kr/news_list.xml",      # 디지털데일리
+        "https://rss.mk.co.kr/news_list.xml",          # 매일경제
+        "https://rss.hankyung.com/new/news_list.xml",  # 한국경제
     ],
+
+    # -----------------------------------------------
+    # 🏢 링크솔루션: Google 뉴스 다각도 검색
+    # -----------------------------------------------
     "링크솔루션": [
-        "https://news.google.com/rss/search?q=링크솔루션&hl=ko&gl=KR&ceid=KR:ko"
-    ]
+        "https://news.google.com/rss/search?q=링크솔루션&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=linksolution&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=링크솔루션+3D프린팅&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=링크솔루션+3D프린터&hl=ko&gl=KR&ceid=KR:ko",
+    ],
 }
 
+# =============================================
+# 🔑 확장된 키워드 (기존 8개 → 30개)
+# =============================================
 KEYWORDS_3D = [
+    # 기본 키워드
     "3d printing", "3d printer", "additive manufacturing", "3d printed",
-    "3d프린터", "3d프린팅", "적층제조", "3차원프린팅"
+    "3d프린터", "3d프린팅", "적층제조", "3차원프린팅",
+    
+    # 기술 키워드
+    "fdm", "sla", "sls", "dlp", "polyjet", "stereolithography",
+    "메탈프린팅", "금속3d", "바이오프린팅", "4d프린팅",
+    "3d출력", "3d조형", "쾌속조형", "레이저소결",
+    
+    # 주요 업체
+    "stratasys", "formlabs", "bambu", "creality", "prusa",
+    "ultimaker", "makerbot", "3dsystems", "markforged", "carbon"
 ]
-
-# =============================================
-# 🔧 강화된 중복 제거 시스템
-# =============================================
 
 def clean_text(text):
     if not text: return ""
@@ -53,7 +115,7 @@ def make_dedup_key(title):
     key = re.sub(r'[^\w가-힣]', ' ', key)
     stopwords = [
         '이', '가', '을', '를', '은', '는', '의', '에', '서', '로', '으로',
-        '와', '과', '도', '만', '그', '것', '수', '등', '및', '또는',
+        '와', '과', '도', '만', '그', '것', '수', '등', '및', '또는', '그리고',
         'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at',
         'to', 'for', 'of', 'with', 'by', 'from', 'is', 'are', 'was',
         '발표', '출시', '공개', '새로운', '최신', '관련', '위한', '대한'
@@ -64,7 +126,7 @@ def make_dedup_key(title):
     company_names = [
         'stratasys', 'markforged', 'bambu', 'creality', 'prusa', 'formlabs',
         'ultimaker', 'makerbot', '3dsystems', 'hp', 'carbon',
-        '삼성', 'lg', '현대', '기아', '포스코', '한화', '두산',
+        '삼성', 'lg', '현대', '기아', '포스코', '한화', '두산', '롯데',
         '링크솔루션', 'linksolution', 'lincsolution'
     ]
     for company in company_names:
@@ -104,92 +166,67 @@ def is_duplicate(new_title, existing_titles, threshold=0.6):
     return False
 
 def is_relevant_3d(title, summary):
+    """3D프린팅 관련성 검사 (확장된 키워드)"""
     text = f"{title} {summary}".lower()
     return any(keyword.lower() in text for keyword in KEYWORDS_3D)
 
-# =============================================
-# 🌍 핵심: 해외 뉴스 사전 번역 시스템
-# =============================================
-
 def pre_translate_foreign_articles(articles, model):
-    """
-    해외 기사를 AI 브리핑 생성 전에 미리 완전 한국어로 번역
-    → 번역 누락 문제를 근본적으로 해결하는 핵심 기능
-    """
     if not articles["해외"]:
         return articles
     
     print("\n🌍 해외 기사 사전 번역 중...")
-    
-    # 번역할 제목들 모음
-    titles_to_translate = []
-    for i, article in enumerate(articles["해외"]):
-        titles_to_translate.append(f"{i+1}. {article['title']}")
-    
+    titles_to_translate = [f"{i+1}. {a['title']}" for i, a in enumerate(articles["해외"])]
     titles_text = "\n".join(titles_to_translate)
     
-    translate_prompt = f"""당신은 전문 한영 번역가입니다. 다음 3D프린팅 관련 영어 뉴스 제목들을 자연스러운 한국어로 번역해주세요.
+    translate_prompt = f"""다음 3D프린팅 관련 영어 뉴스 제목들을 자연스러운 한국어로 번역해주세요.
 
-번역 규칙:
-1. 번호는 그대로 유지하세요
-2. 회사명, 제품명 등 고유명사는 적절히 한국어 표기하거나 원문 유지
-3. 자연스럽고 읽기 쉬운 한국어 문장으로 번역
-4. 각 번역은 한 줄로만 작성
-5. 설명이나 부연 설명 없이 번역문만 출력
+규칙:
+1. 번호는 그대로 유지
+2. 고유명사는 한국어 표기 또는 원문 유지  
+3. 자연스러운 한국어 문장으로 번역
+4. 번역문만 출력
 
-번역할 제목들:
+번역할 제목:
 {titles_text}
 
-출력 형식 (반드시 준수):
-1. [한국어 번역 제목]
-2. [한국어 번역 제목]
-3. [한국어 번역 제목]
+출력 형식:
+1. [한국어 번역]
+2. [한국어 번역]
 ..."""
     
     try:
         response = model.generate_content(translate_prompt)
         translated_lines = response.text.strip().split('\n')
         
-        # 번역 결과를 각 기사에 적용
         translated_count = 0
         for line in translated_lines:
             line = line.strip()
-            if not line:
-                continue
+            if not line: continue
             
-            # "1. 번역내용" 형식에서 번호와 내용 분리
             match = re.match(r'^(\d+)\.\s*(.+)$', line)
             if match:
                 idx = int(match.group(1)) - 1
                 translated_title = match.group(2).strip()
-                
                 if 0 <= idx < len(articles["해외"]):
-                    original = articles["해외"][idx]["title"]
                     articles["해외"][idx]["title_ko"] = translated_title
-                    articles["해외"][idx]["title_original"] = original
+                    articles["해외"][idx]["title_original"] = articles["해외"][idx]["title"]
                     translated_count += 1
                     print(f"  ✅ [{idx+1}] {translated_title}")
         
         print(f"\n  📊 번역 완료: {translated_count}/{len(articles['해외'])}개")
         
-        # 번역되지 않은 기사는 원본 제목 유지
         for article in articles["해외"]:
             if "title_ko" not in article:
                 article["title_ko"] = article["title"]
                 article["title_original"] = article["title"]
-        
+                
     except Exception as e:
-        print(f"  ⚠️ 사전 번역 오류: {e}")
-        # 번역 실패 시 원본 제목 유지
+        print(f"  ⚠️ 번역 오류: {e}")
         for article in articles["해외"]:
             article["title_ko"] = article["title"]
             article["title_original"] = article["title"]
     
     return articles
-
-# =============================================
-# 🗓️ 공휴일/주말 처리
-# =============================================
 
 def is_holiday_or_weekend(check_date):
     if check_date.weekday() >= 5:
@@ -222,13 +259,14 @@ def calculate_collection_period():
         holiday_info.append(f"{check_date.strftime('%m/%d')}({day_name}) {holiday_name}")
         check_date -= timedelta(days=1)
     
-    since = now - timedelta(days=collection_days)
+    # 수집 시간 확장: 36시간 (RSS 업데이트 지연 대비)
+    since = now - timedelta(hours=36) if collection_days == 1 else now - timedelta(days=collection_days)
     
     print(f"\n📅 수집 기간 분석:")
     print(f"  오늘: {today.strftime('%Y-%m-%d')} ({['월','화','수','목','금','토','일'][today.weekday()]}요일)")
     
     if collection_days == 1:
-        print(f"  📊 일반 평일 브리핑 (최근 24시간)")
+        print(f"  📊 수집 범위: 최근 36시간 (놓치는 기사 방지)")
         period_label = f"{today.strftime('%m월 %d일')} 브리핑"
     else:
         print(f"  📊 수집 범위: 최근 {collection_days}일")
@@ -240,24 +278,29 @@ def calculate_collection_period():
     
     return since, period_label
 
-# =============================================
-# 📰 뉴스 수집
-# =============================================
-
 def fetch_articles(since):
-    print(f"\n📰 뉴스 수집 중... (기준: {since.strftime('%m/%d %H:%M')} 이후)")
+    print(f"\n📰 대폭 확장된 뉴스 수집 중... (기준: {since.strftime('%m/%d %H:%M')} 이후)")
     
     raw_articles = {"국내": [], "해외": [], "링크솔루션": []}
     collected_urls = set()
     all_titles = []
 
     for region, feeds in RSS_FEEDS.items():
+        region_count = 0
+        print(f"\n  {'🌍' if region == '해외' else '🇰🇷' if region == '국내' else '🏢'} {region} 수집 시작...")
+
         for url in feeds:
             try:
-                print(f"  📡 {region} 수집: {url[:50]}...")
+                print(f"  📡 수집: {url[:65]}...")
                 feed = feedparser.parse(url)
                 
-                for entry in feed.entries[:15]:
+                if not feed.entries:
+                    print(f"     ⚠️ 빈 피드")
+                    continue
+                
+                feed_count = 0
+                # 수집 개수 확대: 30개 (연휴/키워드 확장 대비)
+                for entry in feed.entries[:30]:
                     published = datetime.now(KST)
                     if hasattr(entry, "published_parsed") and entry.published_parsed:
                         try:
@@ -275,11 +318,11 @@ def fetch_articles(since):
                     if not title or not link:
                         continue
                     
-                    if region != "링크솔루션" and not is_relevant_3d(title, summary):
+                    # 🔑 핵심: 국내/링크솔루션은 이미 키워드 검색이므로 추가 필터 생략
+                    if region == "해외" and not is_relevant_3d(title, summary):
                         continue
                     
                     if link in collected_urls:
-                        print(f"  🔵 URL 중복: '{title[:35]}...'")
                         continue
                     
                     if is_duplicate(title, all_titles):
@@ -294,12 +337,20 @@ def fetch_articles(since):
                         "source": feed.feed.get("title", "Unknown"),
                         "published": published.strftime("%m/%d %H:%M")
                     })
+                    feed_count += 1
+                    region_count += 1
+                
+                if feed_count > 0:
+                    source_name = feed.feed.get("title", "Unknown")[:25]
+                    print(f"     ✅ [{source_name}] {feed_count}개")
                     
             except Exception as e:
-                print(f"  ⚠️ 수집 오류: {e}")
+                print(f"     ⚠️ 수집 오류: {e}")
                 continue
+        
+        print(f"  📊 {region} 소계: {region_count}개")
 
-    # 섹션 간 중복 제거
+    # 섹션 간 중복 제거 (링크솔루션 우선)
     print("\n  🔍 섹션 간 중복 제거 중...")
     linksolution_titles = [a["title"] for a in raw_articles["링크솔루션"]]
     
@@ -312,16 +363,12 @@ def fetch_articles(since):
     
     raw_articles["국내"] = filtered_domestic
     
-    print(f"\n  ✅ 최종 수집:")
-    print(f"     국내: {len(raw_articles['국내'])}개")
-    print(f"     해외: {len(raw_articles['해외'])}개")
-    print(f"     링크솔루션: {len(raw_articles['링크솔루션'])}개")
+    print(f"\n  ✅ 최종 수집 결과:")
+    print(f"     🇰🇷 국내: {len(raw_articles['국내'])}개")
+    print(f"     🌍 해외: {len(raw_articles['해외'])}개")
+    print(f"     🏢 링크솔루션: {len(raw_articles['링크솔루션'])}개")
     
     return raw_articles
-
-# =============================================
-# 🤖 AI 브리핑 생성 (번역 완료된 기사 활용)
-# =============================================
 
 def generate_ai_briefing(articles):
     print("\n🤖 AI 브리핑 생성 중...")
@@ -337,24 +384,21 @@ def generate_ai_briefing(articles):
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-1.5-flash')
         
-        # 🌍 핵심: 해외 기사 사전 번역 먼저 실행!
+        # 해외 기사 사전 번역
         articles = pre_translate_foreign_articles(articles, model)
         
-        # 국내 기사 정리
         domestic_text = "\n".join([
-            f"제목: {a['title']}\n링크: {a['link']}\n---"
+            f"제목: {a['title']}\n링크: {a['link']}\n시간: {a['published']}\n출처: {a['source']}\n---"
             for a in articles["국내"]
         ]) if articles["국내"] else "관련 기사 없음"
         
-        # 해외 기사 정리 (이미 번역된 한국어 제목 사용)
         international_text = "\n".join([
-            f"한국어제목: {a.get('title_ko', a['title'])}\n링크: {a['link']}\n---"
+            f"한국어제목: {a.get('title_ko', a['title'])}\n링크: {a['link']}\n시간: {a['published']}\n출처: {a['source']}\n---"
             for a in articles["해외"]
         ]) if articles["해외"] else "관련 기사 없음"
         
-        # 링크솔루션 기사 정리
         linksolution_text = "\n".join([
-            f"제목: {a['title']}\n링크: {a['link']}\n---"
+            f"제목: {a['title']}\n링크: {a['link']}\n시간: {a['published']}\n출처: {a['source']}\n---"
             for a in articles["링크솔루션"]
         ]) if articles["링크솔루션"] else "관련 기사 없음"
 
@@ -365,35 +409,26 @@ def generate_ai_briefing(articles):
 [국내 3D프린팅 기사]
 {domestic_text}
 
-[해외 3D프린팅 기사 - 이미 한국어로 번역 완료]
+[해외 3D프린팅 기사 - 이미 한국어 번역 완료]
 {international_text}
 
 [링크솔루션 관련 기사]
 {linksolution_text}
 
-=== 🚨 절대 준수 규칙 🚨 ===
+=== 절대 준수 규칙 ===
 
-1. **완전 한국어 출력**: 모든 제목과 내용은 반드시 한국어로만 작성하세요. 영어 단어나 문장이 포함되면 안 됩니다.
-
-2. **해외 동향 작성 규칙**:
-   - "한국어제목"을 그대로 사용하거나 더 자연스럽게 다듬어서 작성
-   - 절대로 영어 원문을 사용하지 마세요
-   - 한 줄 한국어 요약으로 작성
-
-3. **중복 제거**: 같은 사건을 다루는 기사는 1개만 선택. 링크솔루션 내용이 국내 동향에 있으면 링크솔루션 섹션에만 배치.
-
-4. **구조 (순서 변경 금지)**:
-🇰🇷 국내 동향
-🌍 해외 동향
-🏢 링크솔루션 관련 뉴스
-
-5. **형식**:
-• [완전 한국어 제목/요약]
-  🔗 [링크]
-
-6. **기사 없는 섹션**: "새로운 소식이 없습니다."
-
-7. **절대 금지**: 인사말, 맺음말, 날짜, 영어 표현
+1. 모든 내용은 반드시 한국어로만 작성
+2. 해외 동향은 "한국어제목"을 그대로 사용하거나 더 자연스럽게 다듬기
+3. 중복 기사는 1개만 선택, 링크솔루션 내용은 링크솔루션 섹션에만 배치
+4. 구조 (순서 변경 금지):
+   🇰🇷 국내 동향
+   🌍 해외 동향
+   🏢 링크솔루션 관련 뉴스
+5. 형식:
+   • [한국어 제목/요약]
+     🔗 [링크]
+6. 기사 없는 섹션: "새로운 소식이 없습니다."
+7. 절대 금지: 인사말, 맺음말, 날짜, 영어 표현
 
 현재 날짜: {datetime.now(KST).strftime("%Y년 %m월 %d일")}
 """
@@ -416,17 +451,12 @@ def create_fallback_briefing(articles):
     for section_name, items in sections:
         result += f"{section_name}\n"
         if items:
-            for a in items[:5]:
-                # 해외 기사는 번역된 제목 사용
+            for a in items[:10]:  # 더 많은 기사 포함
                 title = a.get('title_ko', a['title'])
                 result += f"• {title}\n  🔗 {a['link']}\n\n"
         else:
             result += "새로운 소식이 없습니다.\n\n"
     return result
-
-# =============================================
-# 📧 이메일 발송
-# =============================================
 
 def send_email(subject, body):
     print("\n📧 이메일 발송 중...")
@@ -463,17 +493,12 @@ def send_email(subject, body):
         print(f"  ❌ 발송 실패: {e}")
         return False
 
-# =============================================
-# 🎯 메인 실행
-# =============================================
-
 def main():
     now = datetime.now(KST)
     today = now.date()
 
     print(f"\n[{now.strftime('%Y-%m-%d %H:%M:%S')} KST] 시스템 시작\n")
 
-    # 휴일/주말 체크
     is_off, off_name = is_holiday_or_weekend(today)
 
     if is_off:
