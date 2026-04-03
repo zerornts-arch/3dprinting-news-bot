@@ -2,8 +2,8 @@ name: 우민님 3D프린팅 뉴스 브리핑
 
 on:
   schedule:
-    # 평일(월-금) 한국시간 오전 10시 (UTC 01시)
-    - cron: "0 1 * * 1-5"
+    # 매일 한국시간 오전 10시 (UTC 01시)
+    - cron: "0 1 * * *"
   workflow_dispatch: {}
 
 env:
