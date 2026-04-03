@@ -2,10 +2,9 @@ name: 우민님 3D프린팅 뉴스 브리핑
 
 on:
   schedule:
-    # 평일(월-금) 한국시간 오전 8시 자동 발송
-    # UTC 기준: 일요일 23시 ~ 목요일 23시 (0-4)
-    - cron: "0 23 * * 0-4"
-  workflow_dispatch: {}  # 수동 실행도 가능
+    # 평일(월-금) 한국시간 오전 10시 (UTC 01시)
+    - cron: "0 1 * * 1-5"
+  workflow_dispatch: {}
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
