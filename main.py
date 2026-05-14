@@ -382,6 +382,18 @@ def build_html_email(period_label, articles):
           링크솔루션 &nbsp;·&nbsp; 정우민 드림 &nbsp;(우민짱 🐱)
         </p>
         <hr style="border:none; border-top:1px solid #f0f0f0; margin:14px 0;">
+        <!-- 후원 -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;">
+          <tr>
+            <td style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:10px; padding:14px 18px; text-align:center;">
+              <p style="margin:0 0 4px; font-size:13px; font-weight:700; color:#92400E;">☕ 후원 계좌</p>
+              <p style="margin:0 0 2px; font-size:15px; font-weight:800; color:#78350F; letter-spacing:0.5px;">
+                국민은행 &nbsp;051001-04-149838
+              </p>
+              <p style="margin:0; font-size:12px; color:#B45309;">작은 응원이 큰 힘이 됩니다 🙏</p>
+            </td>
+          </tr>
+        </table>
         <p style="margin:0; font-size:11px; color:#bbb; line-height:1.6;">
           본 메일은 자동 발송됩니다. &nbsp;|&nbsp; 링크솔루션 3D프린팅 뉴스레터
         </p>
