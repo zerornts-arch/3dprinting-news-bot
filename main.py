@@ -10,7 +10,7 @@ import re
 import holidays
 from difflib import SequenceMatcher
 
-print("🚀 Lincsolution 뉴스 브리핑 시스템 v2.0 (완벽 중복제거)")
+print("🚀 Lincsolution 뉴스 브리핑 시스템 v3.0 (국내외 각 10개 + 24시간 엄격분리)")
 
 KST = timezone(timedelta(hours=9))
 
@@ -19,14 +19,14 @@ ADDITIONAL_HOLIDAYS = {
 }
 
 # =============================================
-# 📡 다양한 뉴스 소스 (네이버, 다음 추가)
+# 📡 다양한 뉴스 소스 (수집량 증가)
 # =============================================
 RSS_FEEDS = {
     "국내": [
         "https://news.google.com/rss/search?q=3D프린팅+OR+적층제조+OR+바이오프린팅&hl=ko&gl=KR&ceid=KR:ko",
-        "https://news.naver.com/main/rss/section.naver?sid1=105",  # 네이버 IT/과학
-        "https://rss.daum.net/news/digital",  # 다음 디지털
-        "https://rss.etnews.com/Section902.xml",  # 전자신문
+        "https://news.naver.com/main/rss/section.naver?sid1=105",
+        "https://rss.daum.net/news/digital",
+        "https://rss.etnews.com/Section902.xml",
     ],
     "국외": [
         "https://3dprintingindustry.com/feed/",
@@ -57,25 +57,17 @@ def clean_text(text):
     return re.sub(r'\s+', ' ', text).strip()
 
 def normalize_title_advanced(title):
-    """고급 제목 정규화 - 언론사명, 불용어 완전 제거"""
+    """고급 제목 정규화"""
     t = title.lower()
-    # 언론사 이름 제거
     t = re.sub(r'(연합뉴스|뉴시스|뉴스1|한국경제|조선일보|중앙일보|동아일보|머니투데이|아시아경제|이데일리|전자신문)', '', t)
-    # 특수문자 제거
     t = re.sub(r'[^\w가-힣\s]', '', t)
-    # 불용어 제거
     stopwords = ['발표', '출시', '공개', '새로운', '최신', '속보', '단독', '종합', '위한', '통해', '대한', '관련', '등장']
     for word in stopwords:
         t = re.sub(r'\b' + word + r'\b', '', t)
     return re.sub(r'\s+', ' ', t).strip()
 
 def is_duplicate_advanced(new_title, seen_titles, threshold=0.55):
-    """
-    3단계 강력한 중복 검사
-    1단계: 완전 일치 검사
-    2단계: 문자열 유사도 55% 이상
-    3단계: 핵심 단어 70% 이상 겹침
-    """
+    """3단계 강력한 중복 검사"""
     new_norm = normalize_title_advanced(new_title)
     new_words = set(new_norm.split())
     
@@ -94,13 +86,13 @@ def is_duplicate_advanced(new_title, seen_titles, threshold=0.55):
             print(f"    🔴 완전중복: {new_title[:35]}...")
             return True
         
-        # 2단계: 문자열 유사도 검사
+        # 2단계: 문자열 유사도
         similarity = SequenceMatcher(None, new_norm, seen_norm).ratio()
         if similarity >= threshold:
             print(f"    🟠 유사중복({similarity:.0%}): {new_title[:35]}...")
             return True
         
-        # 3단계: 핵심 단어 포함도 검사
+        # 3단계: 핵심 단어 포함도
         if len(new_words) > 0:
             intersection = len(new_words & seen_words)
             containment = intersection / len(new_words)
@@ -145,11 +137,17 @@ def calculate_collection_period():
         holiday_info.append(f"{check_date.strftime('%m/%d')}({day_name}) {holiday_name}")
         check_date -= timedelta(days=1)
     
-    since = now - timedelta(hours=36) if collection_days == 1 else now - timedelta(days=collection_days)
+    # 🔥 핵심 변경: 어제 기사 완전 차단을 위한 24시간 엄격 분리
+    if collection_days == 1:
+        # 평일: 정확히 24시간 전부터 수집 (어제 발송 이후 ~ 지금까지)
+        since = now - timedelta(hours=24)
+    else:
+        # 주말/연휴 후: 해당 일수만큼 과거로
+        since = now - timedelta(days=collection_days)
     
     print(f"\n📅 수집 기간:")
     if collection_days == 1:
-        period_label = f"{today.strftime('%m월 %d일')} 브리핑"
+        period_label = f"{today.strftime('%m월 %d일')} 브리핑 (최근 24시간)"
     else:
         start_date = (today - timedelta(days=collection_days - 1)).strftime('%m월 %d일')
         end_date = today.strftime('%m월 %d일')
@@ -160,7 +158,7 @@ def calculate_collection_period():
     return since, period_label
 
 def fetch_articles(since):
-    """강화된 뉴스 수집 - 완벽한 중복 제거"""
+    """강화된 뉴스 수집 - 10개 확보를 위한 넉넉한 수집"""
     print(f"\n📰 뉴스 수집 중... (기준: {since.strftime('%m/%d %H:%M')} 이후)")
     
     articles = {"국내": [], "국외": [], "미국이란": []}
@@ -179,7 +177,8 @@ def fetch_articles(since):
                     continue
                 
                 feed_count = 0
-                for entry in feed.entries[:30]:
+                # 10개를 확보하기 위해 더 많은 기사 검토 (40개로 증가)
+                for entry in feed.entries[:40]:
                     published = datetime.now(KST)
                     if hasattr(entry, "published_parsed") and entry.published_parsed:
                         try:
@@ -187,6 +186,7 @@ def fetch_articles(since):
                         except:
                             pass
                     
+                    # 🔥 24시간 이전 기사 엄격 필터링
                     if published < since:
                         continue
                     
@@ -197,7 +197,7 @@ def fetch_articles(since):
                     if not title or not link:
                         continue
                     
-                    # 모든 섹션에 키워드 필터 적용
+                    # 키워드 필터
                     if region in ["국내", "국외"] and not is_relevant(title, summary, KEYWORDS_3D):
                         continue
                     elif region == "미국이란" and not is_relevant(title, summary, KEYWORDS_IRAN):
@@ -208,7 +208,7 @@ def fetch_articles(since):
                     if clean_url in global_seen_urls:
                         continue
                     
-                    # 🔥 강화된 3단계 중복 검사
+                    # 강화된 중복 검사
                     if is_duplicate_advanced(title, section_seen_titles[region]):
                         continue
                     
@@ -216,7 +216,7 @@ def fetch_articles(since):
                     section_seen_titles[region].append(title)
                     articles[region].append({
                         "title": title,
-                        "summary": summary[:120] + "..." if len(summary) > 120 else summary,
+                        "summary": summary[:150] + "..." if len(summary) > 150 else summary,
                         "link": link,
                         "source": feed.feed.get("title", "Unknown"),
                         "published": published.strftime("%m/%d %H:%M")
@@ -232,7 +232,7 @@ def fetch_articles(since):
                 print(f"    ⚠️ 오류: {e}")
                 continue
         
-        print(f"  📊 {region} 최종: {region_count}개 (중복 완전 제거)")
+        print(f"  📊 {region} 최종: {region_count}개")
     
     print(f"\n  ✅ 전체 수집 결과:")
     print(f"     🇰🇷 국내: {len(articles['국내'])}개")
@@ -242,7 +242,7 @@ def fetch_articles(since):
     return articles
 
 def translate_titles(articles_list, model, section_name):
-    """완벽한 번역 시스템"""
+    """국외 기사 제목 한국어 번역 (강화된 버전)"""
     if not articles_list:
         return articles_list
     
@@ -255,13 +255,15 @@ def translate_titles(articles_list, model, section_name):
     titles_to_translate = "\n".join([f"{i+1}. {a['title']}" for i, a in enumerate(english_articles)])
     
     translate_prompt = f"""다음 영어 뉴스 제목들을 자연스러운 한국어로 번역해주세요.
-특수문자나 마크다운 없이 번역문만 출력하세요.
+3D프린팅, 적층제조 등 전문용어는 한국 업계 표준 용어로 번역하세요.
+특수문자나 마크다운 없이 번호와 번역문만 출력하세요.
 
 {titles_to_translate}
 
-출력 형식 (번호 + 한국어만):
+출력 형식 (다른 설명 없이 이 형식만):
 1. 한국어 번역 제목
-2. 한국어 번역 제목"""
+2. 한국어 번역 제목
+3. 한국어 번역 제목"""
     
     try:
         response = model.generate_content(translate_prompt)
@@ -292,7 +294,7 @@ def translate_titles(articles_list, model, section_name):
     return articles_list
 
 def generate_briefing(articles):
-    """AI 브리핑 생성"""
+    """AI 브리핑 생성 - 국내 10개, 국외 10개, 미국이란 5개"""
     print("\n🤖 AI 브리핑 생성 중...")
     
     api_key = os.environ.get("GEMINI_API_KEY", "").replace('\n', '').replace('\r', '').strip()
@@ -305,6 +307,7 @@ def generate_briefing(articles):
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-1.5-flash')
         
+        # 🔥 국외 및 미국이란 기사 제목 한국어 번역 실행
         articles["국외"] = translate_titles(articles["국외"], model, "국외")
         articles["미국이란"] = translate_titles(articles["미국이란"], model, "미국이란")
         
@@ -328,20 +331,21 @@ def generate_briefing(articles):
 [국내 3D프린팅 기사]
 {domestic_text}
 
-[국외 3D프린팅 기사 - 이미 번역 완료]
+[국외 3D프린팅 기사 - 이미 한국어로 번역 완료]
 {foreign_text}
 
-[미국-이란 관련 기사 - 이미 번역 완료]
+[미국-이란 관련 기사 - 이미 한국어로 번역 완료]
 {iran_text}
 
 === 🚨 절대 준수 규칙 🚨 ===
 1. 완전 한국어로만 작성
 2. 같은 사건 기사는 1개만 선택 (중복 절대 금지)
-3. 섹션당 최대 5개
+3. 📌 개수 규칙: 국내 동향 최대 10개 / 국외 동향 최대 10개 / 미국이란 최대 5개
 4. 구조 순서: 🇰🇷 국내 동향 → 🌍 국외 동향 → ⚔️ 미국 이란 전쟁 관련 뉴스
-5. 형식: • [제목]\n  🔗 [링크]
+5. 형식: • [한국어 제목]\n  🔗 [링크]
 6. 기사 없는 섹션: "새로운 소식이 없습니다."
 7. 인사말, 맺음말, 날짜, 영어 표현 절대 금지
+8. 국외 기사는 반드시 번역된 한국어 제목으로만 표시
 
 현재 날짜: {datetime.now(KST).strftime("%Y년 %m월 %d일")}"""
 
@@ -354,18 +358,18 @@ def generate_briefing(articles):
         return create_simple_briefing(articles)
 
 def create_simple_briefing(articles):
-    """AI 실패 시 기본 브리핑"""
+    """AI 실패 시 기본 브리핑 - 10개씩 출력"""
     result = ""
     sections = [
-        ("🇰🇷 국내 동향", articles["국내"]),
-        ("🌍 국외 동향", articles["국외"]),
-        ("⚔️ 미국 이란 전쟁 관련 뉴스", articles["미국이란"])
+        ("🇰🇷 국내 동향", articles["국내"], 10),
+        ("🌍 국외 동향", articles["국외"], 10),
+        ("⚔️ 미국 이란 전쟁 관련 뉴스", articles["미국이란"], 5)
     ]
     
-    for section_name, items in sections:
+    for section_name, items, max_count in sections:
         result += f"{section_name}\n"
         if items:
-            for a in items[:5]:
+            for a in items[:max_count]:
                 result += f"• {a['title']}\n  🔗 {a['link']}\n\n"
         else:
             result += "새로운 소식이 없습니다.\n\n"
