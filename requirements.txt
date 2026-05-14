@@ -1,5 +1,4 @@
-feedparser>=6.0.10
-google-generativeai>=0.3.0
-requests>=2.31.0
-beautifulsoup4>=4.12.0
-holidays>=0.38
+feedparser
+google-generativeai
+beautifulsoup4
+holidays
