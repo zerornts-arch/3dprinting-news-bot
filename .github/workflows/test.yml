@@ -1,33 +1,31 @@
-name: 우민님 3D프린팅 뉴스 브리핑
+name: Daily News Briefing
 
 on:
   schedule:
-    # 매일 한국시간 오전 10시 (UTC 01시)
-    - cron: "0 1 * * *"
-  workflow_dispatch: {}
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    # 한국시간 오전 10시 = UTC 01시 (정각 회피로 지연 최소화)
+    - cron: '5 1 * * 1-5'   # 월~금 오전 10:05 KST (정각 5분 후)
+  workflow_dispatch:          # 수동 실행 버튼 유지
 
 jobs:
   send-briefing:
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 20
+
     steps:
-      - name: Checkout code
+      - name: 코드 체크아웃
         uses: actions/checkout@v4
-        
-      - name: Setup Python
+
+      - name: Python 설정
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-          
-      - name: Install dependencies
+          python-version: '3.11'
+
+      - name: 라이브러리 설치
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          
-      - name: Run briefing system
+
+      - name: 뉴스 브리핑 실행
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
