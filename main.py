@@ -233,7 +233,7 @@ def generate_briefing(articles):
     if api_key:
         try:
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-2.0-flash')
             articles["국외"] = translate_titles(articles["국외"], model, "국외")
             articles["미국이란"] = translate_titles(articles["미국이란"], model, "미국이란")
             print("  ✅ 번역 완료")
