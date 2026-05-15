@@ -233,7 +233,7 @@ def generate_briefing(articles):
     if api_key:
         try:
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-2.0-flash')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             articles["국외"] = translate_titles(articles["국외"], model, "국외")
             articles["미국이란"] = translate_titles(articles["미국이란"], model, "미국이란")
             print("  ✅ 번역 완료")
@@ -328,13 +328,14 @@ def build_html_email(period_label, articles):
 
     <!-- ══ 헤더 ══ -->
     <tr>
-      <td style="background:linear-gradient(135deg,#1d4ed8 0%,#0ea5e9 100%);
+      <td bgcolor="#1d4ed8"
+          style="background-color:#1d4ed8;
                  border-radius:14px 14px 0 0; padding:28px 28px 24px; text-align:center;">
-        <div style="font-size:11px; color:rgba(255,255,255,0.75); letter-spacing:2px;
+        <div style="font-size:11px; color:#93c5fd; letter-spacing:2px;
                     text-transform:uppercase; margin-bottom:8px;">LINCSOLUTION</div>
-        <div style="font-size:24px; font-weight:800; color:#fff; letter-spacing:-0.5px;
+        <div style="font-size:24px; font-weight:800; color:#ffffff; letter-spacing:-0.5px;
                     margin-bottom:6px;">🖨️ 3D프린팅 뉴스 브리핑</div>
-        <div style="font-size:13px; color:rgba(255,255,255,0.85);">{now_str} &nbsp;|&nbsp; 평일 오전 10시 자동발송</div>
+        <div style="font-size:13px; color:#bfdbfe;">{now_str} &nbsp;|&nbsp; 평일 오전 10시 자동발송</div>
       </td>
     </tr>
 
