@@ -379,11 +379,43 @@ def build_html_email(period_label, articles):
                  border-radius:0 0 14px 14px; padding:22px 28px 24px;
                  border-left:1px solid #e8ecf0; border-right:1px solid #e8ecf0;
                  border-bottom:1px solid #e8ecf0; text-align:center;">
-        <p style="margin:0 0 6px; font-size:15px; font-weight:700; color:#222;">감사합니다 😊</p>
+                <p style="margin:0 0 6px; font-size:15px; font-weight:700; color:#222;">감사합니다 😊</p>
         <p style="margin:0 0 14px; font-size:13px; color:#888;">
           링크솔루션 &nbsp;·&nbsp; 정우민 드림 &nbsp;(우민짱 🐱)
         </p>
+        
+        <!-- 아카이브 링크 버튼 -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+          <tr>
+            <td style="text-align:center;">
+              <a href="https://zerornts-arch.github.io/3dprinting-news-bot/"
+                 target="_blank"
+                 style="display:inline-block;
+                        background:#EFF6FF;
+                        border:1.5px solid #BFDBFE;
+                        border-radius:8px;
+                        padding:12px 28px;
+                        font-size:14px;
+                        font-weight:700;
+                        color:#1d4ed8;
+                        text-decoration:none;
+                        letter-spacing:-0.2px;
+                        transition:all 0.2s;">
+                📚 지난 뉴스 모아보기
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td style="text-align:center; padding-top:6px;">
+              <span style="font-size:11px; color:#9ca3af;">
+                지금까지의 모든 3D프린팅 뉴스를 한곳에서 확인하세요
+              </span>
+            </td>
+          </tr>
+        </table>
+        
         <hr style="border:none; border-top:1px solid #f0f0f0; margin:14px 0;">
+
         <!-- 후원 -->
         <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;">
           <tr>
