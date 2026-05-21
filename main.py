@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 import re
 import holidays
 from difflib import SequenceMatcher
+from pathlib import Path  # 
 
 print("🚀 Lincsolution 뉴스 브리핑 시스템 v4.0 (HTML 뉴스레터)")
 
@@ -448,6 +449,78 @@ def send_email(subject, articles, period_label):
         print(f"  ❌ 발송 실패: {e}")
         return False
 
+def save_newsletter_archive(period_label, articles):
+    """수집된 뉴스레터를 Jekyll 블로그 포스트로 자동 저장"""
+    print("\n💾 웹사이트 아카이브 저장 중...")
+    
+    today = date.today()
+    date_str = today.strftime("%Y-%m-%d")
+    filename = f"{date_str}-newsletter.md"
+    filepath = Path("_posts") / filename
+
+    # 이미 오늘 포스트가 있으면 건너뛰기 (중복 방지)
+    if filepath.exists():
+        print(f"  📝 오늘자 아카이브가 이미 존재합니다: {filepath}")
+        return True
+
+    # _posts 폴더 생성
+    filepath.parent.mkdir(exist_ok=True, parents=True)
+
+    # 각 섹션별 마크다운 생성
+    def build_section_markdown(emoji, title, articles_list, max_count):
+        if not articles_list:
+            return f"\n## {emoji} {title}\n\n새로운 소식이 없습니다.\n"
+        
+        lines = f"\n## {emoji} {title}\n\n"
+        for i, art in enumerate(articles_list[:max_count], 1):
+            art_title = art.get('title', '')
+            art_link = art.get('link', '#')
+            art_source = re.sub(r'(Google News.*|RSS.*)', '', art.get('source', '')).strip()
+            art_time = art.get('published', '')
+            
+            lines += f"{i}. **[{art_title}]({art_link})**\n"
+            lines += f"   - <small>{art_source} | {art_time}</small>\n\n"
+        return lines
+
+    # 각 섹션 생성
+    domestic_md = build_section_markdown("🇰🇷", "국내 동향", articles["국내"], 10)
+    foreign_md = build_section_markdown("🌍", "국외 동향", articles["국외"], 10)
+    iran_md = build_section_markdown("⚔️", "미국·이란 전쟁 관련 뉴스", articles["미국이란"], 5)
+
+    now_str = datetime.now(KST).strftime("%Y년 %m월 %d일")
+
+    # Jekyll 포스트 생성
+    jekyll_content = f"""---
+layout: post
+title: "3D프린팅 뉴스 브리핑 - {now_str}"
+date: {date_str} 10:00:00 +0900
+categories: [newsletter]
+tags: [3d-printing, news, automation]
+---
+
+# 🖨️ 3D프린팅 뉴스 브리핑
+
+> **{period_label}** | {now_str}
+
+{domestic_md}
+---
+{foreign_md}
+---
+{iran_md}
+---
+
+*이 뉴스레터는 링크솔루션 자동화 시스템에 의해 수집·발송·아카이브되었습니다.*  
+*수집 시간: {datetime.now(KST).strftime('%Y년 %m월 %d일 %H:%M')} KST*
+"""
+
+    # 파일 저장
+    try:
+        filepath.write_text(jekyll_content, encoding="utf-8")
+        print(f"  ✅ 웹사이트 아카이브 저장 완료: {filepath}")
+        return True
+    except Exception as e:
+        print(f"  ❌ 아카이브 저장 실패: {e}")
+        return False
 
 def main():
     now   = datetime.now(KST)
@@ -467,6 +540,8 @@ def main():
 
     subject = f"[Lincsolution] 📅 {datetime.now(KST).strftime('%m월 %d일')} 3D프린팅 뉴스 브리핑"
     result  = send_email(subject, articles, period_label)
+
+    save_newsletter_archive(period_label, articles)
 
     if result:
         print("\n🎉 HTML 브리핑 발송 완료!")
