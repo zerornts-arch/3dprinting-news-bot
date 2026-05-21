@@ -7,6 +7,8 @@ title: 홈
 
 매일 자동으로 수집되는 3D 프린팅 뉴스를 아카이브합니다.
 
+🔍 **[뉴스레터 검색하기 →](./search.html)**
+
 ## 📰 최근 뉴스레터
 
 {% for post in site.posts limit:15 %}
