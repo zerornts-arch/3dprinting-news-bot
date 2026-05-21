@@ -1,0 +1,11 @@
+title: 3D 프린팅 뉴스레터 아카이브
+description: 매일 자동으로 수집되는 3D 프린팅 뉴스 아카이브
+theme: jekyll-theme-minimal
+baseurl: "/3dprinting-news-bot"
+url: "https://zeromts-arch.github.io"
+show_excerpts: true
+future: false
+
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
