@@ -10,6 +10,10 @@ jobs:
   send-briefing:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    
+    # ✅ 새로 추가: GitHub Actions가 파일을 커밋할 수 있는 권한 부여
+    permissions:
+      contents: write
 
     steps:
       - name: 코드 체크아웃
@@ -32,3 +36,17 @@ jobs:
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
         run: python main.py
+
+      # ✅ 새로 추가: 생성된 아카이브 파일을 자동으로 저장소에 커밋하고 푸시
+      - name: 뉴스레터 아카이브 자동 커밋
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action Bot"
+          git add _posts/
+          if git diff --staged --quiet; then
+            echo "📝 새로운 아카이브가 없습니다."
+          else
+            git commit -m "📰 뉴스레터 아카이브 자동 추가: $(date +'%Y-%m-%d')"
+            git push
+            echo "✅ 웹사이트 아카이브 업데이트 완료!"
+          fi
