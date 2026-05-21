@@ -450,35 +450,47 @@ def send_email(subject, articles, period_label):
         raw_to       = os.environ.get("EMAIL_TO", "").strip()
         app_password = os.environ.get("EMAIL_APP_PASSWORD", "").replace(' ', '').strip()
 
-        to_list   = [e.strip() for e in raw_to.split(',') if e.strip()]
-        to_string = ", ".join(to_list)
+        to_list = [e.strip() for e in raw_to.split(',') if e.strip()]
 
         print(f"  발송자: {from_addr}")
-        print(f"  수신자 ({len(to_list)}명): {to_string}")
+        print(f"  총 수신자: {len(to_list)}명 (개별 발송으로 숨김 처리)")
 
         if not from_addr or not to_list or not app_password:
             raise ValueError("이메일 설정 정보가 누락되었습니다.")
         if len(app_password) != 16:
             raise ValueError(f"앱 비밀번호 오류: {len(app_password)}자 (16자 필요)")
 
+        # 이메일 본문은 한 번만 생성 (효율성)
         html_body = build_html_email(period_label, articles)
 
-        msg = MIMEMultipart('alternative')
-        msg["Subject"] = Header(subject, "utf-8")
-        msg["From"]    = from_addr
-        msg["To"]      = to_string
-        msg.attach(MIMEText(html_body, 'html', 'utf-8'))
-
+        # SMTP 서버 연결
         with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()
             server.login(from_addr, app_password)
-            server.sendmail(from_addr, to_list, msg.as_string())
+            
+            # 🔑 핵심: 수신자별로 개별 발송
+            success_count = 0
+            for i, to_email in enumerate(to_list, 1):
+                try:
+                    msg = MIMEMultipart('alternative')
+                    msg["Subject"] = Header(subject, "utf-8")
+                    msg["From"]    = from_addr
+                    msg["To"]      = to_email  # ✅ 받는 사람에 본인만 표시!
+                    
+                    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+                    
+                    server.sendmail(from_addr, [to_email], msg.as_string())
+                    print(f"    ✅ [{i}/{len(to_list)}] {to_email} 발송 완료")
+                    success_count += 1
+                    
+                except Exception as e:
+                    print(f"    ❌ [{i}/{len(to_list)}] {to_email} 발송 실패: {e}")
 
-        print(f"  ✅ {len(to_list)}명에게 발송 완료!")
-        return True
+        print(f"  🎉 최종 결과: {success_count}/{len(to_list)}명 발송 완료!")
+        return success_count > 0
 
     except Exception as e:
-        print(f"  ❌ 발송 실패: {e}")
+        print(f"  ❌ 전체 발송 프로세스 실패: {e}")
         return False
 
 def save_newsletter_archive(period_label, articles):
