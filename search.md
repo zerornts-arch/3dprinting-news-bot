@@ -64,7 +64,7 @@ function filterSection(section) {
   renderResults();
 }
 
-// 기존에 만드신 검색어 노란색 강조(하이라이트) 기능 그대로 유지
+// 검색어 노란색 강조(하이라이트) 기능
 function highlight(text, query) {
   if (!query) return text;
   const regex = new RegExp(`(${query})`, 'gi');
@@ -151,5 +151,12 @@ function renderResults() {
 #search-input:focus {
   border-color: #1d4ed8;
   box-shadow: 0 0 0 3px rgba(29,78,216,0.15);
+}
+
+/* 💡 왼쪽 메뉴바 제목 글자 크기 조절 (한 줄 맞춤 설정 추가) */
+header h1 {
+  font-size: 21px !important;
+  letter-spacing: -0.5px;
+  word-break: keep-all;
 }
 </style>
