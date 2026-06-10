@@ -68,7 +68,11 @@ def normalize_title_advanced(title):
         t = re.sub(r'\b' + word + r'\b', '', t)
     return re.sub(r'\s+', ' ', t).strip()
 
-def is_duplicate_advanced(new_title, seen_titles, threshold=0.55):
+def is_duplicate_advanced(new_title, seen_titles, threshold=0.75):
+    """중복 기사 판정.
+    - 같은 사건을 여러 매체가 보도하는 경우(제목 유사) 중복으로 처리
+    - threshold를 0.75로 올려 너무 엄격한 중복 차단 방지
+    """
     new_norm = normalize_title_advanced(new_title)
     new_words = set(new_norm.split())
     if len(new_words) < 2:
@@ -83,10 +87,11 @@ def is_duplicate_advanced(new_title, seen_titles, threshold=0.55):
         similarity = SequenceMatcher(None, new_norm, seen_norm).ratio()
         if similarity >= threshold:
             return True
+        # 단어 포함 비율도 동일하게 완화 (0.70 → 0.85)
         if len(new_words) > 0:
             intersection = len(new_words & seen_words)
             containment = intersection / len(new_words)
-            if containment >= 0.70:
+            if containment >= 0.85:
                 return True
     return False
 
@@ -140,13 +145,18 @@ def fetch_articles(since):
         emoji = {'국내': '🇰🇷', '국외': '🌍', '미국이란': '⚔️'}[region]
         print(f"\n  {emoji} {region} 수집 중...")
         region_count = 0
+        # 국내는 구글뉴스 7개 쿼리 사용 → 더 많은 항목 탐색, 상한 15개
+        max_entries = 100 if region == "국내" else 40
+        region_max  = 15 if region == "국내" else 10
         for url in feeds:
+            if region_count >= region_max:
+                break
             try:
                 feed = feedparser.parse(url)
                 if not feed.entries:
                     continue
                 feed_count = 0
-                for entry in feed.entries[:40]:
+                for entry in feed.entries[:max_entries]:
                     published = datetime.now(KST)
                     if hasattr(entry, "published_parsed") and entry.published_parsed:
                         try:
@@ -180,6 +190,8 @@ def fetch_articles(since):
                     })
                     feed_count += 1
                     region_count += 1
+                    if region_count >= region_max:
+                        break
                 if feed_count > 0:
                     source_name = feed.feed.get("title", url[:30])[:20]
                     print(f"    ✅ [{source_name}] {feed_count}개")
@@ -283,7 +295,7 @@ def build_html_email(period_label, articles):
     </tr>
   </table>"""
 
-    domestic_block  = section_block("🇰🇷", "국내 동향",              "#2563EB", articles["국내"],    10)
+    domestic_block  = section_block("🇰🇷", "국내 동향",              "#2563EB", articles["국내"],    15)  # 국내 상한 15개
     foreign_block   = section_block("🌍", "국외 동향",               "#059669", articles["국외"],    10)
     iran_block      = section_block("⚔️", "미국·이란 전쟁 관련 뉴스", "#DC2626", articles["미국이란"], 5)
 
@@ -450,7 +462,7 @@ def save_newsletter_archive(period_label, articles):
             lines += f"   - <small>{art_source} | {art['published']}</small>\n\n"
         return lines
 
-    domestic_md = build_section_markdown("🇰🇷", "국내 동향", articles["국내"], 10)
+    domestic_md = build_section_markdown("🇰🇷", "국내 동향", articles["국내"], 15)  # 국내 상한 15개
     foreign_md = build_section_markdown("🌍", "국외 동향", articles["국외"], 10)
     iran_md = build_section_markdown("⚔️", "미국·이란 전쟁 관련 뉴스", articles["미국이란"], 5)
     now_str = datetime.now(KST).strftime("%Y년 %m월 %d일")
