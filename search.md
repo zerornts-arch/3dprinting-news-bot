@@ -480,8 +480,7 @@ function renderResults() {
   const filtered = allArticles.filter(a => {
     const matchCat  = currentFilter === 'all' || a.category === currentFilter;
     const matchQ    = !query ||
-      a.title.toLowerCase().includes(query) ||
-      (a.source && a.source.toLowerCase().includes(query));
+      a.title.toLowerCase().includes(query);
     const matchDate = !dateFilter || a.date === dateFilter;
     return matchCat && matchQ && matchDate;
   });
@@ -510,9 +509,8 @@ function renderResults() {
 
   resultsDiv.innerHTML = filtered.map(a => {
     const emoji = a.category === '국내' ? '🇰🇷' : a.category === '국외' ? '🌍' : '⚔️';
-    const hlTitle  = highlight(a.title, query);
-    const hlSource = highlight(a.source || '', query);
-    const hlDate   = highlight(a.date, query);
+    const hlTitle = highlight(a.title, query);
+    const hlDate  = highlight(a.date, query);
 
     return `
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;
@@ -523,12 +521,9 @@ function renderResults() {
         </div>
         <a href="${a.link}" target="_blank"
            style="font-size:16px;font-weight:700;color:#1d4ed8;
-                  text-decoration:none;line-height:1.45;display:block;margin-bottom:8px;">
+                  text-decoration:none;line-height:1.45;display:block;">
           ${hlTitle}
         </a>
-        <p style="font-size:13px;color:#6b7280;line-height:1.6;margin:0;">
-          출처: ${hlSource}
-        </p>
       </div>`;
   }).join('');
 }
