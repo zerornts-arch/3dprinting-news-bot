@@ -1,0 +1,93 @@
+---
+layout: default
+---
+
+<div class="post-page">
+
+  <!-- POST HEADER -->
+  <div class="post-header">
+    <div class="post-header-inner">
+      <a href="{{ '/' | relative_url }}" class="post-back">← 홈으로</a>
+      <div class="post-meta-row">
+        {% if page.categories %}
+        <span class="post-cat-badge">{{ page.categories | first }}</span>
+        {% endif %}
+        <span class="post-date-text">{{ page.date | date: "%Y년 %m월 %d일" }}</span>
+      </div>
+      <h1 class="post-headline">{{ page.title }}</h1>
+      {% if page.description %}
+      <p class="post-subtitle">{{ page.description }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- BODY GRID -->
+  <div class="post-body-grid">
+
+    <!-- MAIN CONTENT -->
+    <article class="post-content-area">
+      {{ content }}
+    </article>
+
+    <!-- POST SIDEBAR -->
+    <aside class="post-sidebar">
+
+      <!-- DATE INFO -->
+      <div class="sidebar-box">
+        <div class="sidebar-title">발행 정보</div>
+        <p style="font-size:.85rem;color:var(--text-soft);line-height:1.7;">
+          📅 <strong style="color:var(--mint-dark);">{{ page.date | date: "%Y년 %m월 %d일" }}</strong> 발행<br>
+          {% if page.tags %}
+          🏷️ {{ page.tags | join: ", " }}
+          {% endif %}
+        </p>
+      </div>
+
+      <!-- RECENT POSTS -->
+      <div class="sidebar-box">
+        <div class="sidebar-title">최근 뉴스레터</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;">
+          {% for post in site.posts limit:5 %}
+          <li>
+            <a href="{{ post.url | relative_url }}"
+               style="font-size:.83rem;font-weight:{% if post.url == page.url %}700{% else %}500{% endif %};color:{% if post.url == page.url %}var(--mint-dark){% else %}var(--text-mid){% endif %};text-decoration:none;line-height:1.4;display:block;transition:color .2s;"
+               onmouseover="this.style.color='var(--mint-dark)'"
+               onmouseout="this.style.color='{% if post.url == page.url %}var(--mint-dark){% else %}var(--text-mid){% endif %}'">
+              {{ post.date | date: "%m/%d" }} — {{ post.title | truncate: 32 }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- SUBSCRIBE -->
+      <div class="sidebar-box subscribe-box">
+        <h3>뉴스레터 구독</h3>
+        <p>매주 화요일 아침 받아보세요.</p>
+        <input class="sub-input" type="email" placeholder="your@email.com">
+        <button class="sub-btn">무료 구독</button>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- PREV / NEXT -->
+  <nav class="post-nav" aria-label="이전/다음 글">
+    {% if page.previous %}
+    <a href="{{ page.previous.url | relative_url }}" class="post-nav-item prev">
+      <div class="post-nav-label">← 이전 호</div>
+      <div class="post-nav-title">{{ page.previous.title | truncate: 48 }}</div>
+    </a>
+    {% else %}
+    <div></div>
+    {% endif %}
+
+    {% if page.next %}
+    <a href="{{ page.next.url | relative_url }}" class="post-nav-item next">
+      <div class="post-nav-label">다음 호 →</div>
+      <div class="post-nav-title">{{ page.next.title | truncate: 48 }}</div>
+    </a>
+    {% endif %}
+  </nav>
+
+</div>

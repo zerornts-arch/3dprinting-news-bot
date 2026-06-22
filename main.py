@@ -26,9 +26,21 @@ ADDITIONAL_HOLIDAYS = {
 # =============================================
 RSS_FEEDS = {
     "국내": [
-        "https://news.google.com/rss/search?q=3D프린팅+OR+적층제조+OR+바이오프린팅&hl=ko&gl=KR&ceid=KR:ko",
-        "https://news.naver.com/main/rss/section.naver?sid1=105",
-        "https://rss.daum.net/news/digital",
+        # ── 핵심 통합 쿼리 (가장 넓은 그물)
+        "https://news.google.com/rss/search?q=3D%ED%94%84%EB%A6%B0%ED%8C%85+OR+%EC%A0%81%EC%B8%B5%EC%A0%9C%EC%A1%B0+OR+%EB%B0%94%EC%9D%B4%EC%98%A4%ED%94%84%EB%A6%B0%ED%8C%85&hl=ko&gl=KR&ceid=KR:ko",
+        # ── 3D 프린터 단독 검색
+        "https://news.google.com/rss/search?q=3D%ED%94%84%EB%A6%B0%ED%84%B0&hl=ko&gl=KR&ceid=KR:ko",
+        # ── 의료·바이오 특화
+        "https://news.google.com/rss/search?q=%EB%B0%94%EC%9D%B4%EC%98%A4%ED%94%84%EB%A6%B0%ED%8C%85+OR+%EB%B0%94%EC%9D%B4%EC%98%A4+%ED%94%84%EB%A6%B0%ED%8C%85&hl=ko&gl=KR&ceid=KR:ko",
+        # ── 의료기기·치과
+        "https://news.google.com/rss/search?q=3D%ED%94%84%EB%A6%B0%ED%8C%85+%EC%9D%98%EB%A3%8C%EA%B8%B0%EA%B8%B0&hl=ko&gl=KR&ceid=KR:ko",
+        # ── 금속 프린팅
+        "https://news.google.com/rss/search?q=%EA%B8%88%EC%86%8D+3D%ED%94%84%EB%A6%B0%ED%8C%85+OR+%EB%A9%94%ED%83%88+%ED%94%84%EB%A6%B0%ED%8C%85&hl=ko&gl=KR&ceid=KR:ko",
+        # ── 건축·건설
+        "https://news.google.com/rss/search?q=3D%ED%94%84%EB%A6%B0%ED%8C%85+%EA%B1%B4%EC%B6%95+OR+3D%ED%94%84%EB%A6%B0%ED%8C%85+%EA%B1%B4%EC%84%A4&hl=ko&gl=KR&ceid=KR:ko",
+        # ── 방산·군사·항공우주
+        "https://news.google.com/rss/search?q=3D%ED%94%84%EB%A6%B0%ED%8C%85+%EB%B0%A9%EC%82%B0+OR+3D%ED%94%84%EB%A6%B0%ED%8C%85+%EA%B5%B0%EC%82%AC&hl=ko&gl=KR&ceid=KR:ko",
+        # ── IT·전자뉴스 RSS
         "https://rss.etnews.com/Section902.xml",
     ],
     "국외": [
@@ -36,16 +48,40 @@ RSS_FEEDS = {
         "https://all3dp.com/feed/",
         "https://3dprint.com/feed/",
         "https://news.google.com/rss/search?q=3D+printing+OR+additive+manufacturing&hl=en-US&gl=US&ceid=US:en",
+        # ── 금속 AM
+        "https://news.google.com/rss/search?q=metal+3D+printing+OR+metal+additive+manufacturing&hl=en-US&gl=US&ceid=US:en",
+        # ── 바이오프린팅
+        "https://news.google.com/rss/search?q=bioprinting+OR+bio+3D+printing&hl=en-US&gl=US&ceid=US:en",
     ],
     "미국이란": [
-        "https://news.google.com/rss/search?q=미국+이란&hl=ko&gl=KR&ceid=KR:ko",
+        "https://news.google.com/rss/search?q=%EB%AF%B8%EA%B5%AD+%EC%9D%B4%EB%9E%80&hl=ko&gl=KR&ceid=KR:ko",
         "https://news.google.com/rss/search?q=US+Iran&hl=en-US&gl=US&ceid=US:en",
     ]
 }
 
 KEYWORDS_3D = [
-    "3d printing", "3d printer", "additive manufacturing", "3d printed",
-    "3d프린터", "3d프린팅", "적층제조", "3차원프린팅", "바이오프린팅", "3d 프린팅"
+    # 한국어 — 기본
+    "3d프린터", "3d프린팅", "3d 프린팅", "3d 프린터",
+    "적층제조", "적층 제조", "3차원프린팅", "3차원 프린팅",
+    "바이오프린팅", "바이오 프린팅", "바이오 3d",
+    # 한국어 — 기술 방식
+    "fdm", "fff", "sla", "sls", "dlp", "msla", "lcd 프린팅",
+    "소결", "광조형", "분말소결", "분말 소결",
+    "dmlm", "dmls", "ebm", "ded", "binder jetting",
+    # 한국어 — 소재
+    "필라멘트 프린터", "레진 프린터", "금속 프린팅", "메탈 프린팅",
+    "폴리머 프린팅", "세라믹 프린팅", "콘크리트 프린팅",
+    # 한국어 — 응용 분야
+    "3d프린팅 의료", "의료 3d프린팅", "3d프린팅 건축", "3d프린팅 항공",
+    "3d프린팅 우주", "3d프린팅 자동차", "3d프린팅 방산", "3d프린팅 식품",
+    "3d프린팅 교육", "3d프린팅 산업", "3d프린팅 부품",
+    # 영어
+    "3d printing", "3d printer", "3d printed", "3d-printing",
+    "additive manufacturing", "additive manufacture",
+    "rapid prototyping", "fused deposition", "stereolithography",
+    "selective laser", "direct metal", "powder bed fusion",
+    "fdm printing", "sla printing", "sls printing",
+    "bioprinting", "bio-printing", "biofabrication",
 ]
 
 KEYWORDS_IRAN = [
@@ -68,10 +104,10 @@ def normalize_title_advanced(title):
         t = re.sub(r'\b' + word + r'\b', '', t)
     return re.sub(r'\s+', ' ', t).strip()
 
-def is_duplicate_advanced(new_title, seen_titles, threshold=0.75):
+def is_duplicate_advanced(new_title, seen_titles, threshold=0.82):
     """중복 기사 판정.
     - 같은 사건을 여러 매체가 보도하는 경우(제목 유사) 중복으로 처리
-    - threshold를 0.75로 올려 너무 엄격한 중복 차단 방지
+    - threshold 0.82: 완전히 동일한 기사만 중복 처리, 다른 매체 보도는 허용
     """
     new_norm = normalize_title_advanced(new_title)
     new_words = set(new_norm.split())
@@ -87,11 +123,11 @@ def is_duplicate_advanced(new_title, seen_titles, threshold=0.75):
         similarity = SequenceMatcher(None, new_norm, seen_norm).ratio()
         if similarity >= threshold:
             return True
-        # 단어 포함 비율도 동일하게 완화 (0.70 → 0.85)
+        # 단어 포함 비율 (0.90으로 강화 → 거의 똑같은 제목만 중복 처리)
         if len(new_words) > 0:
             intersection = len(new_words & seen_words)
             containment = intersection / len(new_words)
-            if containment >= 0.85:
+            if containment >= 0.90:
                 return True
     return False
 
@@ -145,9 +181,9 @@ def fetch_articles(since):
         emoji = {'국내': '🇰🇷', '국외': '🌍', '미국이란': '⚔️'}[region]
         print(f"\n  {emoji} {region} 수집 중...")
         region_count = 0
-        # 국내는 구글뉴스 7개 쿼리 사용 → 더 많은 항목 탐색, 상한 15개
-        max_entries = 100 if region == "국내" else 40
-        region_max  = 15 if region == "국내" else 10
+        # 국내는 다수 쿼리 사용 → 더 많은 항목 탐색, 상한 20개
+        max_entries = 100 if region == "국내" else 50
+        region_max  = 20 if region == "국내" else 10
         for url in feeds:
             if region_count >= region_max:
                 break
@@ -295,7 +331,7 @@ def build_html_email(period_label, articles):
     </tr>
   </table>"""
 
-    domestic_block  = section_block("🇰🇷", "국내 동향",              "#2563EB", articles["국내"],    15)  # 국내 상한 15개
+    domestic_block  = section_block("🇰🇷", "국내 동향",              "#2563EB", articles["국내"],    20)  # 국내 상한 20개
     foreign_block   = section_block("🌍", "국외 동향",               "#059669", articles["국외"],    10)
     iran_block      = section_block("⚔️", "미국·이란 전쟁 관련 뉴스", "#DC2626", articles["미국이란"], 5)
 
@@ -314,7 +350,7 @@ def build_html_email(period_label, articles):
       <td bgcolor="#1d4ed8" style="background-color:#1d4ed8; border-radius:14px 14px 0 0; padding:28px 28px 24px; text-align:center;">
         <div style="font-size:11px; color:#93c5fd; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;">LINCSOLUTION</div>
         <div style="font-size:24px; font-weight:800; color:#ffffff; letter-spacing:-0.5px; margin-bottom:6px;">🖨️ 3D프린팅 뉴스 브리핑</div>
-        <div style="font-size:13px; color:#bfdbfe;">{now_str} &nbsp;|&nbsp; 평일 오전 10시 자동발송</div>
+        <div style="font-size:13px; color:#bfdbfe;">{now_str} &nbsp;|&nbsp; 평일 오전 9시 자동발송 (KST)</div>
       </td>
     </tr>
     <tr>
@@ -462,7 +498,7 @@ def save_newsletter_archive(period_label, articles):
             lines += f"   - <small>{art_source} | {art['published']}</small>\n\n"
         return lines
 
-    domestic_md = build_section_markdown("🇰🇷", "국내 동향", articles["국내"], 15)  # 국내 상한 15개
+    domestic_md = build_section_markdown("🇰🇷", "국내 동향", articles["국내"], 20)  # 국내 상한 20개
     foreign_md = build_section_markdown("🌍", "국외 동향", articles["국외"], 10)
     iran_md = build_section_markdown("⚔️", "미국·이란 전쟁 관련 뉴스", articles["미국이란"], 5)
     now_str = datetime.now(KST).strftime("%Y년 %m월 %d일")

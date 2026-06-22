@@ -1,6 +1,6 @@
-title: 우민짱의 3D 프린팅 뉴스레터 
+title: 우민짱의 3D 프린팅 뉴스레터
 description: 우민짱이 매일 수집하는 3D 프린팅 뉴스
-theme: jekyll-theme-minimal
+# theme: jekyll-theme-minimal  ← Soft Elegant Mint 커스텀 테마로 교체
 baseurl: "/3dprinting-news-bot"
 url: "https://zeromts-arch.github.io"
 show_excerpts: true
