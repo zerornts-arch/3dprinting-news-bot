@@ -3,7 +3,7 @@ name: Daily News Briefing
 on:
   schedule:
     # 한국시간 오전 10시 = UTC 01시 (정각 회피로 지연 최소화)
-    - cron: '5 1 * * 1-5'   # 월~금 오전 10:05 KST (정각 5분 후)
+    - cron: '30 23 * * 0-4'  # 일~목 UTC 23:30 = 월~금 KST 08:30
   workflow_dispatch:          # 수동 실행 버튼 유지
 
 jobs:
