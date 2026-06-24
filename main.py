@@ -97,17 +97,33 @@ def clean_text(text):
 
 def normalize_title_advanced(title):
     t = title.lower()
-    t = re.sub(r'(연합뉴스|뉴시스|뉴스1|한국경제|조선일보|중앙일보|동아일보|머니투데이|아시아경제|이데일리|전자신문)', '', t)
+    # 출처명 제거 (더 많은 언론사 추가)
+    t = re.sub(
+        r'(연합뉴스|뉴시스|뉴스1|한국경제|조선일보|중앙일보|동아일보|머니투데이|아시아경제|'
+        r'이데일리|전자신문|매일경제|한겨레|경향신문|서울경제|파이낸셜뉴스|헤럴드경제|'
+        r'세계일보|국민일보|문화일보|디지털타임스|지디넷|zdnet|reuters|bloomberg|'
+        r'techcrunch|engadget|the verge|wired|forbes)', '', t)
     t = re.sub(r'[^\w가-힣\s]', '', t)
-    stopwords = ['발표', '출시', '공개', '새로운', '최신', '속보', '단독', '종합', '위한', '통해', '대한', '관련', '등장']
+    # 불용어 대폭 확장
+    stopwords = [
+        '발표', '출시', '공개', '새로운', '최신', '속보', '단독', '종합', '위한', '통해',
+        '대한', '관련', '등장', '업데이트', '예정', '확인', '소식', '밝혀', '보도',
+        '기자', '기사', '뉴스', '리포트', '분석', '전망', '전문', '결과', '현황',
+        '따르면', '의하면', '알려', '계획', '진행', '시작', '완료', '실시', '도입',
+        '개발', '출격', '선보', '주목', '화제', '급부상', '급성장', '새로', '이번',
+        '향후', '업계', '전문가', '관계자', '등', '의', '을', '를', '이', '가',
+    ]
     for word in stopwords:
         t = re.sub(r'\b' + word + r'\b', '', t)
+    # 숫자+단위 패턴 정규화 (예: 100억 → )
+    t = re.sub(r'\d+(억|만|천|조|개|명|원|달러|배|%|퍼센트)', '', t)
     return re.sub(r'\s+', ' ', t).strip()
 
-def is_duplicate_advanced(new_title, seen_titles, threshold=0.82):
+def is_duplicate_advanced(new_title, seen_titles, threshold=0.72):
     """중복 기사 판정.
-    - 같은 사건을 여러 매체가 보도하는 경우(제목 유사) 중복으로 처리
-    - threshold 0.82: 완전히 동일한 기사만 중복 처리, 다른 매체 보도는 허용
+    - threshold 0.72: 여러 매체의 같은 사건 보도도 중복으로 처리
+    - 단어 포함 비율 0.70: 핵심 단어 70% 이상 겹치면 중복
+    - 양방향 containment 체크로 포함 관계도 감지
     """
     new_norm = normalize_title_advanced(new_title)
     new_words = set(new_norm.split())
@@ -118,16 +134,20 @@ def is_duplicate_advanced(new_title, seen_titles, threshold=0.82):
         seen_words = set(seen_norm.split())
         if not seen_words:
             continue
+        # 1. 정규화 후 완전 동일
         if new_norm == seen_norm:
             return True
+        # 2. 문자열 유사도 (임계값 0.72로 강화)
         similarity = SequenceMatcher(None, new_norm, seen_norm).ratio()
         if similarity >= threshold:
             return True
-        # 단어 포함 비율 (0.90으로 강화 → 거의 똑같은 제목만 중복 처리)
-        if len(new_words) > 0:
+        # 3. 단어 포함 비율 — 양방향 체크 (0.70으로 완화, 더 많이 걸러냄)
+        if len(new_words) > 0 and len(seen_words) > 0:
             intersection = len(new_words & seen_words)
-            containment = intersection / len(new_words)
-            if containment >= 0.90:
+            containment_new  = intersection / len(new_words)
+            containment_seen = intersection / len(seen_words)
+            # 어느 한 쪽이 70% 이상 포함되면 중복
+            if containment_new >= 0.70 or containment_seen >= 0.70:
                 return True
     return False
 
@@ -172,18 +192,32 @@ def calculate_collection_period():
         period_label = f"{start_date} ~ {end_date} 모아보기"
     return since, period_label
 
+def extract_domain(url):
+    """URL에서 도메인 추출 (중복 출처 감지용)"""
+    match = re.search(r'https?://(?:www\.)?([^/]+)', url)
+    return match.group(1) if match else url
+
 def fetch_articles(since):
     print(f"\n📰 뉴스 수집 중... (기준: {since.strftime('%m/%d %H:%M')} 이후)")
     articles = {"국내": [], "국외": [], "미국이란": []}
     global_seen_urls = set()
+    # 정규화된 제목 목록 (전체 섹션 공유하여 더 강하게 중복 차단)
     section_seen_titles = {"국내": [], "국외": [], "미국이란": []}
+    # 국내 도메인별 기사 수 추적 (동일 출처 쏠림 방지)
+    domain_counts = {"국내": {}, "국외": {}, "미국이란": {}}
+
     for region, feeds in RSS_FEEDS.items():
         emoji = {'국내': '🇰🇷', '국외': '🌍', '미국이란': '⚔️'}[region]
         print(f"\n  {emoji} {region} 수집 중...")
         region_count = 0
-        # 국내는 다수 쿼리 사용 → 더 많은 항목 탐색, 상한 20개
+        # 탐색 엔트리 수 / 최종 목표 수
         max_entries = 100 if region == "국내" else 50
-        region_max  = 20 if region == "국내" else 10
+        region_max  = 15 if region == "국내" else 10  # 국내 15개로 소폭 축소 (품질 집중)
+        # 피드당 최대 채택 수: 같은 RSS 소스에서 너무 많이 뽑히지 않도록
+        per_feed_max = 3 if region == "국내" else 5
+        # 동일 도메인(출처) 최대 채택 수
+        per_domain_max = 3 if region == "국내" else 5
+
         for url in feeds:
             if region_count >= region_max:
                 break
@@ -193,6 +227,11 @@ def fetch_articles(since):
                     continue
                 feed_count = 0
                 for entry in feed.entries[:max_entries]:
+                    if region_count >= region_max:
+                        break
+                    if feed_count >= per_feed_max:
+                        break
+
                     published = datetime.now(KST)
                     if hasattr(entry, "published_parsed") and entry.published_parsed:
                         try:
@@ -201,20 +240,36 @@ def fetch_articles(since):
                             pass
                     if published < since:
                         continue
+
                     title = clean_text(entry.get("title", ""))
                     summary = clean_text(entry.get("summary", ""))
                     link = entry.get("link", "")
                     if not title or not link:
                         continue
+
+                    # 관련성 필터
                     if region in ["국내", "국외"] and not is_relevant(title, summary, KEYWORDS_3D):
                         continue
                     elif region == "미국이란" and not is_relevant(title, summary, KEYWORDS_IRAN):
                         continue
+
+                    # URL 중복 체크
                     clean_url = re.sub(r'\?.*', '', link)
                     if clean_url in global_seen_urls:
                         continue
+
+                    # 제목 중복 체크 (강화된 로직)
                     if is_duplicate_advanced(title, section_seen_titles[region]):
+                        print(f"    🔁 중복 제거: {title[:40]}...")
                         continue
+
+                    # 동일 도메인 쏠림 방지
+                    domain = extract_domain(link)
+                    domain_cnt = domain_counts[region].get(domain, 0)
+                    if domain_cnt >= per_domain_max:
+                        continue
+                    domain_counts[region][domain] = domain_cnt + 1
+
                     global_seen_urls.add(clean_url)
                     section_seen_titles[region].append(title)
                     articles[region].append({
@@ -226,8 +281,7 @@ def fetch_articles(since):
                     })
                     feed_count += 1
                     region_count += 1
-                    if region_count >= region_max:
-                        break
+
                 if feed_count > 0:
                     source_name = feed.feed.get("title", url[:30])[:20]
                     print(f"    ✅ [{source_name}] {feed_count}개")
