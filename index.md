@@ -24,9 +24,7 @@ title: 홈
         국내외 3D 프린팅 최신 뉴스, 업계 동향, 신제품 소식을<br>
         매일 자동으로 수집·아카이브합니다.
       </p>
-      <div class="hero-actions">
-        <a href="{{ '/search.html' | relative_url }}" class="btn-primary">뉴스레터 검색하기 →</a>
-      </div>
+
     </div>
 
     <!-- RIGHT: Stats Card -->
