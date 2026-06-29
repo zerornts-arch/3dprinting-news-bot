@@ -25,16 +25,16 @@ header h1 {
   transition: all 0.2s;
 }
 .home-btn:hover {
-  background: #e2e8f0;
-  color: #1d4ed8;
-  border-color: #1d4ed8;
+  background: var(--mint-pale);
+  color: var(--mint-dark);
+  border-color: var(--mint);
 }
 
 /* ── 탭 ── */
 .tab-wrap {
   display: flex;
   gap: 0;
-  border: 2px solid #1d4ed8;
+  border: 2px solid var(--mint-dark);
   border-radius: 10px;
   overflow: hidden;
   margin: 20px 0 24px;
@@ -47,7 +47,7 @@ header h1 {
   cursor: pointer;
   border: none;
   background: #fff;
-  color: #1d4ed8;
+  color: var(--mint-dark);
   transition: all 0.2s;
   display: flex;
   align-items: center;
@@ -55,11 +55,11 @@ header h1 {
   gap: 6px;
 }
 .tab-btn.active {
-  background: #1d4ed8;
+  background: var(--mint-dark);
   color: #fff;
 }
 .tab-btn:first-child {
-  border-right: 2px solid #1d4ed8;
+  border-right: 2px solid var(--mint-dark);
 }
 
 /* ── 검색 패널 ── */
@@ -71,20 +71,20 @@ header h1 {
   width: 100%;
   padding: 12px 16px;
   font-size: 16px;
-  border: 2px solid #1d4ed8;
+  border: 2px solid var(--mint-dark);
   border-radius: 8px;
   box-sizing: border-box;
   outline: none;
   transition: box-shadow 0.2s;
 }
 #keyword-input:focus {
-  box-shadow: 0 0 0 3px rgba(29,78,216,0.15);
+  box-shadow: 0 0 0 3px rgba(95,193,194,0.25);
 }
 
 /* ── 달력 ── */
 .cal-wrap {
   background: #fff;
-  border: 2px solid #1d4ed8;
+  border: 2px solid var(--mint-dark);
   border-radius: 12px;
   overflow: hidden;
   user-select: none;
@@ -93,7 +93,7 @@ header h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #1d4ed8;
+  background: var(--mint-dark);
   padding: 14px 18px;
 }
 .cal-header span {
@@ -141,25 +141,25 @@ header h1 {
   position: relative;
 }
 .cal-day:hover:not(.empty):not(.no-data) {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--mint-pale);
+  color: var(--mint-dark);
   font-weight: 700;
 }
 .cal-day.has-data {
   font-weight: 700;
-  color: #1d4ed8;
+  color: var(--mint-dark);
 }
 .cal-day.has-data::after {
   content: '';
   display: block;
   width: 5px;
   height: 5px;
-  background: #1d4ed8;
+  background: var(--mint-dark);
   border-radius: 50%;
   margin: 2px auto 0;
 }
 .cal-day.selected {
-  background: #1d4ed8 !important;
+  background: var(--mint-dark) !important;
   color: #fff !important;
   font-weight: 700;
 }
@@ -171,13 +171,15 @@ header h1 {
   color: #d1d5db;
 }
 .cal-day.today {
-  background: #eff6ff;
+  background: var(--mint-pale);
   font-weight: 700;
 }
 .cal-day.sunday { color: #ef4444; }
 .cal-day.saturday { color: #3b82f6; }
 .cal-day.sunday.has-data { color: #ef4444; }
 .cal-day.saturday.has-data { color: #3b82f6; }
+.cal-day.has-data.sunday { color: #ef4444; }
+.cal-day.has-data.saturday { color: #3b82f6; }
 .cal-day.selected.sunday,
 .cal-day.selected.saturday { color: #fff !important; }
 
@@ -186,13 +188,13 @@ header h1 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #eff6ff;
-  border: 1.5px solid #bfdbfe;
+  background: var(--mint-pale);
+  border: 1.5px solid var(--mint-light);
   border-radius: 20px;
   padding: 6px 14px;
   font-size: 14px;
   font-weight: 700;
-  color: #1d4ed8;
+  color: var(--mint-dark);
   margin-top: 12px;
 }
 .date-badge-clear {
@@ -217,8 +219,8 @@ header h1 {
   cursor: pointer;
   transition: all 0.2s;
 }
-.filter-btn:hover  { border-color: #1d4ed8; color: #1d4ed8; }
-.filter-btn.active { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+.filter-btn:hover  { border-color: var(--mint-dark); color: var(--mint-dark); }
+.filter-btn.active { background: var(--mint-dark); color: #fff; border-color: var(--mint-dark); }
 </style>
 
 <!-- 홈 버튼 -->
@@ -520,7 +522,7 @@ function renderResults() {
           ${emoji} ${a.category} &nbsp;|&nbsp; 📅 ${hlDate}
         </div>
         <a href="${a.link}" target="_blank"
-           style="font-size:16px;font-weight:700;color:#1d4ed8;
+           style="font-size:16px;font-weight:700;color:var(--mint-dark);
                   text-decoration:none;line-height:1.45;display:block;">
           ${hlTitle}
         </a>
