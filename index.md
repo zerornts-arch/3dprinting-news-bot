@@ -26,7 +26,6 @@ title: 홈
       </p>
       <div class="hero-actions">
         <a href="{{ '/search.html' | relative_url }}" class="btn-primary">뉴스레터 검색하기 →</a>
-        <a href="{{ site.posts.first.url | relative_url }}" class="btn-ghost">최신호 읽기</a>
       </div>
     </div>
 
@@ -68,20 +67,8 @@ title: 홈
      ════════════════════════════════════════ -->
 <div class="page-wrapper">
 
-  <!-- TOPIC TAGS -->
-  <div class="topic-tags" style="margin-top:40px;">
-    <a href="{{ '/' | relative_url }}" class="topic-tag active">전체 <small>{{ site.posts.size }}호</small></a>
-    <span class="topic-tag">국내 동향</span>
-    <span class="topic-tag">국외 동향</span>
-    <span class="topic-tag">바이오프린팅</span>
-    <span class="topic-tag">산업·제조</span>
-    <span class="topic-tag">소재·재료</span>
-    <span class="topic-tag">소비자 제품</span>
-    <span class="topic-tag">항공우주</span>
-  </div>
-
   <!-- SECTION TITLE + LIST/SIDEBAR GRID -->
-  <div class="section-header">
+  <div class="section-header" style="margin-top:48px;">
     <div class="section-title">전체 <span>아카이브</span></div>
     <a href="{{ '/search.html' | relative_url }}" class="see-all">검색으로 찾기 →</a>
   </div>
@@ -93,7 +80,10 @@ title: 홈
       <ul class="post-list">
         {% for post in site.posts %}
         <li>
-          <a href="{{ post.url | relative_url }}" class="post-list-item">
+          <a href="{{ post.url | relative_url }}" class="post-list-item{% if forloop.first %} post-list-item--latest{% endif %}">
+            {% if forloop.first %}
+            <div class="post-latest-badge">최신호</div>
+            {% endif %}
             <div class="post-num">{{ forloop.index | prepend: '00' | slice: -2, 2 }}</div>
             <div class="post-content">
               <div class="post-category">뉴스레터</div>
@@ -112,31 +102,6 @@ title: 홈
     <!-- SIDEBAR -->
     <aside class="sidebar">
 
-      <!-- SUBSCRIBE -->
-      <div class="sidebar-box subscribe-box">
-        <h3>뉴스레터 구독</h3>
-        <p>최신 3D 프린팅 소식을 이메일로 받아보세요.</p>
-        <input class="sub-input" type="email" placeholder="your@email.com">
-        <button class="sub-btn">무료로 구독하기</button>
-      </div>
-
-      <!-- POPULAR TAGS -->
-      <div class="sidebar-box">
-        <div class="sidebar-title">인기 태그</div>
-        <div class="tag-cloud">
-          <a href="#" class="tag-chip">#3D프린팅</a>
-          <a href="#" class="tag-chip">#적층제조</a>
-          <a href="#" class="tag-chip">#FDM</a>
-          <a href="#" class="tag-chip">#레진</a>
-          <a href="#" class="tag-chip">#바이오</a>
-          <a href="#" class="tag-chip">#금속프린팅</a>
-          <a href="#" class="tag-chip">#Bambu</a>
-          <a href="#" class="tag-chip">#Formlabs</a>
-          <a href="#" class="tag-chip">#링크솔루션</a>
-          <a href="#" class="tag-chip">#항공우주</a>
-        </div>
-      </div>
-
       <!-- ABOUT -->
       <div class="sidebar-box about-box">
         <div class="sidebar-title">뉴스레터 소개</div>
@@ -149,3 +114,36 @@ title: 홈
   </div>
 
 </div>
+
+<style>
+/* 최신호 강조 */
+.post-list-item--latest {
+  position: relative;
+  background: var(--mint-pale2);
+  border-left: 3px solid var(--mint);
+  border-radius: var(--radius-sm);
+  padding-left: 16px !important;
+}
+.post-list-item--latest .post-title {
+  color: var(--mint-dark);
+}
+.post-list-item--latest .post-num {
+  color: var(--mint-light);
+}
+.post-latest-badge {
+  position: absolute;
+  top: 20px;
+  right: 16px;
+  background: var(--mint-dark);
+  color: white;
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+@media (max-width: 600px) {
+  .post-latest-badge { font-size: .6rem; padding: 2px 6px; }
+}
+</style>
