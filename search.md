@@ -4,22 +4,24 @@ title: 뉴스레터 검색
 ---
 
 <style>
-/* ── 공통 ── */
-header h1 {
-  font-size: 21px !important;
-  letter-spacing: -0.5px;
-  word-break: keep-all;
+/* ── 검색 페이지 전체 래퍼 — 중앙 정렬 + 너비 제한 ── */
+.search-page-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
 }
+
+/* ── 공통 ── */
 .home-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 18px;
+  padding: 7px 16px;
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   color: #374151;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s;
@@ -94,13 +96,35 @@ header h1 {
   align-items: center;
   justify-content: space-between;
   background: var(--mint-dark);
-  padding: 14px 18px;
+  padding: 10px 14px;
+  gap: 6px;
 }
-.cal-header span {
-  font-size: 16px;
-  font-weight: 800;
+/* 년/월 선택 드롭다운 */
+.cal-select {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 6px;
   color: #fff;
-  letter-spacing: -0.3px;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: center;
+}
+.cal-select option {
+  background: #1f6c6d;
+  color: #fff;
+  font-weight: 600;
+}
+.cal-header-mid {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
 }
 .cal-nav {
   background: none;
@@ -108,10 +132,11 @@ header h1 {
   color: #fff;
   font-size: 20px;
   cursor: pointer;
-  padding: 0 6px;
+  padding: 2px 8px;
   line-height: 1;
   border-radius: 6px;
   transition: background 0.15s;
+  flex-shrink: 0;
 }
 .cal-nav:hover { background: rgba(255,255,255,0.2); }
 .cal-grid {
@@ -176,14 +201,12 @@ header h1 {
 }
 .cal-day.sunday { color: #ef4444; }
 .cal-day.saturday { color: #3b82f6; }
-.cal-day.sunday.has-data { color: #ef4444; }
-.cal-day.saturday.has-data { color: #3b82f6; }
 .cal-day.has-data.sunday { color: #ef4444; }
 .cal-day.has-data.saturday { color: #3b82f6; }
 .cal-day.selected.sunday,
 .cal-day.selected.saturday { color: #fff !important; }
 
-/* 날짜 선택 표시 배지 */
+/* 날짜 선택 배지 */
 .date-badge {
   display: inline-flex;
   align-items: center;
@@ -223,12 +246,14 @@ header h1 {
 .filter-btn.active { background: var(--mint-dark); color: #fff; border-color: var(--mint-dark); }
 </style>
 
+<div class="search-page-wrap">
+
 <!-- 홈 버튼 -->
 <div style="margin-bottom:18px;">
   <a href="{{ site.baseurl }}/" class="home-btn">🏠 홈으로 돌아가기</a>
 </div>
 
-<h1>🔍 뉴스레터 검색</h1>
+<h1 style="font-size:22px;font-weight:800;margin-bottom:4px;">🔍 뉴스레터 검색</h1>
 
 <!-- ── 탭 전환 ── -->
 <div class="tab-wrap">
@@ -256,7 +281,10 @@ header h1 {
   <div class="cal-wrap">
     <div class="cal-header">
       <button class="cal-nav" onclick="moveMonth(-1)">&#8249;</button>
-      <span id="cal-title"></span>
+      <div class="cal-header-mid">
+        <select id="cal-year-sel" class="cal-select" onchange="onYearChange(this.value)"></select>
+        <select id="cal-month-sel" class="cal-select" onchange="onMonthChange(this.value)"></select>
+      </div>
       <button class="cal-nav" onclick="moveMonth(1)">&#8250;</button>
     </div>
     <div class="cal-grid" id="cal-dow-row">
@@ -290,6 +318,8 @@ header h1 {
   </div>
 </div>
 
+</div><!-- /.search-page-wrap -->
+
 <script>
 /* ════════════════════════════════
    데이터 로딩
@@ -297,7 +327,7 @@ header h1 {
 let allArticles = [];
 let currentFilter = 'all';
 let currentKeyword = '';
-let currentDate = '';   // 'YYYY-MM-DD' 또는 ''
+let currentDate = '';
 let activeTab = 'keyword';
 
 const baseurl = '{{ site.baseurl }}';
@@ -334,11 +364,10 @@ function switchTab(tab) {
   document.getElementById('panel-keyword').classList.toggle('active', tab === 'keyword');
   document.getElementById('panel-date').classList.toggle('active', tab === 'date');
 
-  // 반대 탭의 검색값 초기화
   if (tab === 'keyword') {
     currentDate = '';
     document.getElementById('date-badge-wrap').innerHTML = '';
-    renderCalendar();          // 달력 선택 해제
+    renderCalendar();
   } else {
     currentKeyword = '';
     document.getElementById('keyword-input').value = '';
@@ -357,16 +386,74 @@ function onKeywordInput() {
 /* ════════════════════════════════
    달력
 ════════════════════════════════ */
-let calYear, calMonth;   // 현재 달력에 표시 중인 연/월
+let calYear, calMonth;
 
 function buildCalendar() {
   const now = new Date();
   calYear  = now.getFullYear();
-  calMonth = now.getMonth();   // 0-based
+  calMonth = now.getMonth();
+  buildYearMonthSelects();
   renderCalendar();
 }
 
-// 데이터에 실제 존재하는 날짜 세트
+/* 데이터에 존재하는 연도 범위 계산 */
+function getDataYearRange() {
+  if (!allArticles.length) {
+    const now = new Date();
+    return { min: now.getFullYear(), max: now.getFullYear() };
+  }
+  const years = allArticles.map(a => parseInt(a.date.slice(0, 4)));
+  return { min: Math.min(...years), max: Math.max(...years) };
+}
+
+/* 년/월 드롭다운 빌드 */
+function buildYearMonthSelects() {
+  const { min, max } = getDataYearRange();
+  const now = new Date();
+  const maxYear = Math.max(max, now.getFullYear());
+
+  const yearSel = document.getElementById('cal-year-sel');
+  yearSel.innerHTML = '';
+  for (let y = maxYear; y >= min; y--) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y + '년';
+    if (y === calYear) opt.selected = true;
+    yearSel.appendChild(opt);
+  }
+
+  const monthSel = document.getElementById('cal-month-sel');
+  const monthNames = ['01월','02월','03월','04월','05월','06월',
+                      '07월','08월','09월','10월','11월','12월'];
+  monthSel.innerHTML = '';
+  for (let m = 0; m < 12; m++) {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = monthNames[m];
+    if (m === calMonth) opt.selected = true;
+    monthSel.appendChild(opt);
+  }
+}
+
+function onYearChange(y) {
+  calYear = parseInt(y);
+  syncSelects();
+  renderCalendar();
+}
+
+function onMonthChange(m) {
+  calMonth = parseInt(m);
+  syncSelects();
+  renderCalendar();
+}
+
+function syncSelects() {
+  const yearSel  = document.getElementById('cal-year-sel');
+  const monthSel = document.getElementById('cal-month-sel');
+  if (yearSel)  yearSel.value  = calYear;
+  if (monthSel) monthSel.value = calMonth;
+}
+
 function getDataDates() {
   return new Set(allArticles.map(a => a.date));
 }
@@ -375,6 +462,7 @@ function moveMonth(delta) {
   calMonth += delta;
   if (calMonth > 11) { calMonth = 0;  calYear++; }
   if (calMonth < 0)  { calMonth = 11; calYear--; }
+  syncSelects();
   renderCalendar();
 }
 
@@ -383,40 +471,33 @@ function renderCalendar() {
   const today = new Date();
   const todayStr = toDateStr(today.getFullYear(), today.getMonth() + 1, today.getDate());
 
-  document.getElementById('cal-title').textContent =
-    `${calYear}년 ${String(calMonth + 1).padStart(2,'0')}월`;
-
-  const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=일
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
   const lastDate = new Date(calYear, calMonth + 1, 0).getDate();
 
   let html = '';
-
-  // 앞쪽 빈칸
   for (let i = 0; i < firstDay; i++) {
     html += `<div class="cal-day empty"></div>`;
   }
-
   for (let d = 1; d <= lastDate; d++) {
-    const ds = toDateStr(calYear, calMonth + 1, d);
-    const dow = (firstDay + d - 1) % 7;   // 0=일, 6=토
-    const hasData  = dataDates.has(ds);
-    const isToday  = ds === todayStr;
-    const isSel    = ds === currentDate;
-    const isSun    = dow === 0;
-    const isSat    = dow === 6;
+    const ds  = toDateStr(calYear, calMonth + 1, d);
+    const dow = (firstDay + d - 1) % 7;
+    const hasData = dataDates.has(ds);
+    const isToday = ds === todayStr;
+    const isSel   = ds === currentDate;
+    const isSun   = dow === 0;
+    const isSat   = dow === 6;
 
     let cls = 'cal-day';
-    if (!hasData)  cls += ' no-data';
-    if (hasData)   cls += ' has-data';
-    if (isToday)   cls += ' today';
-    if (isSel)     cls += ' selected';
-    if (isSun)     cls += ' sunday';
-    if (isSat)     cls += ' saturday';
+    if (!hasData) cls += ' no-data';
+    if (hasData)  cls += ' has-data';
+    if (isToday)  cls += ' today';
+    if (isSel)    cls += ' selected';
+    if (isSun)    cls += ' sunday';
+    if (isSat)    cls += ' saturday';
 
     const click = hasData ? `onclick="selectDate('${ds}')"` : '';
     html += `<div class="${cls}" ${click}>${d}</div>`;
   }
-
   document.getElementById('cal-body').innerHTML = html;
 }
 
@@ -426,12 +507,10 @@ function toDateStr(y, m, d) {
 
 function selectDate(ds) {
   if (currentDate === ds) {
-    // 같은 날짜 재클릭 → 선택 해제
     currentDate = '';
     document.getElementById('date-badge-wrap').innerHTML = '';
   } else {
     currentDate = ds;
-    // 날짜 배지
     document.getElementById('date-badge-wrap').innerHTML =
       `<div class="date-badge">
          📅 ${ds} 뉴스
@@ -476,24 +555,21 @@ function renderResults() {
   const resultsDiv = document.getElementById('search-results');
   const countDiv   = document.getElementById('search-count');
 
-  const query = activeTab === 'keyword' ? currentKeyword : '';
-  const dateFilter = activeTab === 'date' ? currentDate : '';
+  const query      = activeTab === 'keyword' ? currentKeyword : '';
+  const dateFilter = activeTab === 'date'    ? currentDate    : '';
 
   const filtered = allArticles.filter(a => {
     const matchCat  = currentFilter === 'all' || a.category === currentFilter;
-    const matchQ    = !query ||
-      a.title.toLowerCase().includes(query);
+    const matchQ    = !query || a.title.toLowerCase().includes(query);
     const matchDate = !dateFilter || a.date === dateFilter;
     return matchCat && matchQ && matchDate;
   });
 
-  // 카운트 문구
   const isDefault = !query && !dateFilter && currentFilter === 'all';
   countDiv.innerHTML = isDefault
     ? `총 <strong>${allArticles.length}개</strong>의 뉴스 기사가 아카이브되어 있습니다.`
     : `<strong>${filtered.length}개</strong>의 결과를 찾았습니다.`;
 
-  // 결과 없음
   if (filtered.length === 0) {
     const msg = dateFilter
       ? `${dateFilter} 날짜의 뉴스가 없습니다.`
@@ -512,17 +588,16 @@ function renderResults() {
   resultsDiv.innerHTML = filtered.map(a => {
     const emoji = a.category === '국내' ? '🇰🇷' : a.category === '국외' ? '🌍' : '⚔️';
     const hlTitle = highlight(a.title, query);
-    const hlDate  = highlight(a.date, query);
-
+    const hlDate  = highlight(a.date,  query);
     return `
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;
-                  padding:18px 20px;margin-bottom:14px;
+                  padding:16px 18px;margin-bottom:12px;
                   box-shadow:0 1px 3px rgba(0,0,0,0.06);">
         <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">
           ${emoji} ${a.category} &nbsp;|&nbsp; 📅 ${hlDate}
         </div>
         <a href="${a.link}" target="_blank"
-           style="font-size:16px;font-weight:700;color:var(--mint-dark);
+           style="font-size:15px;font-weight:700;color:var(--mint-dark);
                   text-decoration:none;line-height:1.45;display:block;">
           ${hlTitle}
         </a>
