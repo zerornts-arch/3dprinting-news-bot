@@ -42,7 +42,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action Bot"
-          git add _posts/
+          git add _posts/ search.json
           if git diff --staged --quiet; then
             echo "📝 새로운 아카이브가 없습니다."
           else
