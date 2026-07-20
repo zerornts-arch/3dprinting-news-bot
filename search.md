@@ -4,6 +4,13 @@ title: 뉴스레터 검색
 ---
 
 <style>
+/* ── 검색 페이지 컨테이너 ── */
+.search-container {
+  max-width: 720px;
+  margin: 48px auto;
+  padding: 0 24px 80px;
+}
+
 /* ── 공통 ── */
 header h1 {
   font-size: 21px !important;
@@ -222,6 +229,8 @@ header h1 {
 .filter-btn:hover  { border-color: var(--mint-dark); color: var(--mint-dark); }
 .filter-btn.active { background: var(--mint-dark); color: #fff; border-color: var(--mint-dark); }
 </style>
+
+<div class="search-container">
 
 <!-- 홈 버튼 -->
 <div style="margin-bottom:18px;">
@@ -530,3 +539,5 @@ function renderResults() {
   }).join('');
 }
 </script>
+
+</div><!-- /.search-container -->
