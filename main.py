@@ -237,7 +237,7 @@ def fetch_articles(since):
         print(f"  📊 {region} 최종: {region_count}개")
     return articles
 
-def translate_titles(articles_list, model, section_name):
+def translate_titles(articles_list, client, section_name):
     if not articles_list:
         return articles_list
     english_articles = [a for a in articles_list if re.search(r'[a-zA-Z]{5,}', a['title'])]
@@ -255,7 +255,10 @@ def translate_titles(articles_list, model, section_name):
 1. 한국어 번역 제목
 2. 한국어 번역 제목"""
     try:
-        response = model.generate_content(translate_prompt)
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=translate_prompt
+        )
         translated_lines = response.text.strip().split('\n')
         for line in translated_lines:
             line = re.sub(r'[*#`]', '', line).strip()
@@ -280,10 +283,9 @@ def generate_briefing(articles):
     
     if api_key:
         try:
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-2.5-flash')
-            articles["국외"] = translate_titles(articles["국외"], model, "국외")
-            articles["미국이란"] = translate_titles(articles["미국이란"], model, "미국이란")
+            client = genai_new.Client(api_key=api_key)
+            articles["국외"] = translate_titles(articles["국외"], client, "국외")
+            articles["미국이란"] = translate_titles(articles["미국이란"], client, "미국이란")
             print("  ✅ 번역 완료")
         except Exception as e:
             print(f"  ⚠️ AI 오류: {e}")
