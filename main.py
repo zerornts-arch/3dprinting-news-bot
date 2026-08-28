@@ -408,20 +408,31 @@ def build_html_email(period_label, articles):
 
 def send_email(subject, articles, period_label):
     print("\n📧 이메일 발송 중...")
+    from_addr    = os.environ.get("EMAIL_FROM", "").strip()
+    raw_to       = os.environ.get("EMAIL_TO", "").strip()
+    app_password = os.environ.get("EMAIL_APP_PASSWORD", "").replace(' ', '').strip()
+    to_list = [e.strip() for e in raw_to.split(',') if e.strip()]
+
+    # ── 환경변수 점검 (값 노출 없이 유무만 출력)
+    print(f"  EMAIL_FROM       : {'✅ 설정됨' if from_addr    else '❌ 미설정'}")
+    print(f"  EMAIL_TO         : {'✅ ' + str(len(to_list)) + '명' if to_list else '❌ 미설정'}")
+    print(f"  EMAIL_APP_PASSWORD: {'✅ 설정됨' if app_password else '❌ 미설정'}")
+
+    if not from_addr or not to_list or not app_password:
+        print("  ❌ 이메일 환경변수 누락 — GitHub Secrets를 확인하세요.")
+        return False
+
+    html_body = build_html_email(period_label, articles)
+
     try:
-        from_addr    = os.environ.get("EMAIL_FROM", "").strip()
-        raw_to       = os.environ.get("EMAIL_TO", "").strip()
-        app_password = os.environ.get("EMAIL_APP_PASSWORD", "").replace(' ', '').strip()
-        to_list = [e.strip() for e in raw_to.split(',') if e.strip()]
-
-        if not from_addr or not to_list or not app_password:
-            raise ValueError("이메일 설정 정보가 누락되었습니다.")
-
-        html_body = build_html_email(period_label, articles)
-
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        print("  SMTP 연결 중 (smtp.gmail.com:587)...")
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as server:
+            server.set_debuglevel(0)
+            server.ehlo()
             server.starttls()
+            server.ehlo()
             server.login(from_addr, app_password)
+            print("  ✅ SMTP 로그인 성공")
             success_count = 0
             for i, to_email in enumerate(to_list, 1):
                 try:
@@ -431,12 +442,20 @@ def send_email(subject, articles, period_label):
                     msg["To"]      = to_email
                     msg.attach(MIMEText(html_body, 'html', 'utf-8'))
                     server.sendmail(from_addr, [to_email], msg.as_string())
+                    print(f"  ✅ [{i}/{len(to_list)}] 발송 완료 → {to_email}")
                     success_count += 1
                 except Exception as e:
-                    print(f"    ❌ 발송 실패: {e}")
-
+                    print(f"  ❌ [{i}/{len(to_list)}] 발송 실패 → {to_email} | 오류: {e}")
+        print(f"\n📊 발송 결과: {success_count}/{len(to_list)}명 성공")
         return success_count > 0
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"  ❌ SMTP 인증 실패 — 앱 비밀번호를 확인하세요. ({e})")
+        return False
+    except smtplib.SMTPException as e:
+        print(f"  ❌ SMTP 오류: {e}")
+        return False
     except Exception as e:
+        print(f"  ❌ 예외 발생: {type(e).__name__}: {e}")
         return False
 
 def save_newsletter_archive(period_label, articles):
@@ -530,12 +549,15 @@ def main():
     today = now.date()
     is_off, off_name = is_holiday_or_weekend(today)
     if is_off:
+        print(f"⏭️ 오늘({today}, {off_name})은 휴일/주말이므로 발송 건너뜀.")
         return
     since, period_label = calculate_collection_period()
     articles = fetch_articles(since)
     articles = generate_briefing(articles)
     subject = f"[Lincsolution] 📅 {datetime.now(KST).strftime('%m월 %d일')} 3D프린팅 뉴스 브리핑"
-    send_email(subject, articles, period_label)
+    email_ok = send_email(subject, articles, period_label)
+    if not email_ok:
+        print("\n⚠️ 이메일 발송에 실패했습니다. 위 로그를 확인하세요.")
     save_newsletter_archive(period_label, articles)
 
 if __name__ == "__main__":
