@@ -6,7 +6,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
 from datetime import datetime, timedelta, timezone, date
-import google.generativeai as genai
+from google import genai as genai_new
 from bs4 import BeautifulSoup
 import re
 import holidays
